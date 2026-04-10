@@ -2,6 +2,7 @@ backend:
   name: git-gateway
   repo: JoshZ-zzx/JoshZ-zzx.github.io
   branch: main
+  site_domain: inspiring-cat-299a60.netlify.app
 load_config_file: false
 
 media_folder: "images"
