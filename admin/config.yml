@@ -1,17 +1,17 @@
 backend:
   name: github
-  repo: JoshZ-zzx/JoshZ-zzx.github.io  # 确认这里的用户名和仓库名完全正确
-  branch: main # 确认你的主分支叫 main 而不是 master
+  repo: JoshZ-zzx/JoshZ-zzx.github.io
+  branch: main
 
 media_folder: "images"
 public_folder: "/images"
 
 collections:
   - name: "links"
-    label: "链接管理"
+    label: "Links Management"
     files:
       - file: "index.html"
-        label: "首页导航"
+        label: "Home Links Edit"
         name: "home"
         fields:
-          - { label: "代码编辑", name: "body", widget: "code", default_language: "html" }
+          - { label: "Body", name: "body", widget: "code", default_language: "html" }
