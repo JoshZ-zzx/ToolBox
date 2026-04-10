@@ -2,52 +2,57 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Content Manager</title>
+  <title>Josh's Admin Panel</title>
   <meta name="google" content="notranslate" />
+  <script>
+    // 【暴力第 1 步】在所有脚本加载前，强行在本地存储里打桩
+    // 这样 Identity 脚本一醒过来，就会以为自己就该去 netlify.app
+    localStorage.setItem('netlifySiteURL', 'https://inspiring-cat-299a60.netlify.app');
+  </script>
+  
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
   <script>
-    // 3. 【核心】告诉 CMS：闭嘴，等我手动初始化，不要自己乱跑找 config.yml
+    // 【暴力第 3 步】开启手动模式，不让它乱动
     window.CMS_MANUAL_INIT = true;
   </script>
 
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
 
   <script>
-    // 5. 手动注入所有配置（彻底解决 404 问题）
+    // 【暴力第 5 步】手动初始化，把配置直接塞给后台
     CMS.init({
       config: {
         backend: {
           name: 'git-gateway',
-          repo: 'JoshZ-zzx/ToolBox', // 如果你的仓库名改了，请务必修改这里
+          repo: 'JoshZ-zzx/ToolBox', // 确保你的仓库名是这个
           branch: 'main',
-          site_domain: 'inspiring-cat-299a60.netlify.app', // 强制指向 Netlify 域名
+          site_domain: 'inspiring-cat-299a60.netlify.app'
         },
         display_url: "https://joshzhangzzx.top",
         media_folder: "images",
         public_folder: "/images",
         collections: [
           {
-            name: "blog",
-            label: "Blog Posts",
+            name: "posts",
+            label: "我的博文",
             folder: "_posts",
             create: true,
-            slug: "{{year}}-{{month}}-{{day}}-{{slug}}",
             fields: [
-              { label: "Title", name: "title", widget: "string" },
-              { label: "Publish Date", name: "date", widget: "datetime" },
-              { label: "Body", name: "body", widget: "markdown" }
+              { label: "标题", name: "title", widget: "string" },
+              { label: "正文", name: "body", widget: "markdown" }
             ]
           }
         ]
       }
     });
 
-    // 6. 强制校准登录框地址
-    window.netlifyIdentity.on('init', () => {
-      window.netlifyIdentity.setAPIUrl('https://inspiring-cat-299a60.netlify.app/.netlify/identity');
+    // 【暴力第 6 步】初始化 Identity 配置（这次换个写法，不调函数，改对象）
+    netlifyIdentity.init({
+      APIConfig: {
+        api_url: 'https://inspiring-cat-299a60.netlify.app/.netlify/identity'
+      }
     });
   </script>
 </body>
