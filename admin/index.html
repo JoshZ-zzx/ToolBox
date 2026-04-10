@@ -3,28 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <title>Josh's Admin</title>
+  
+  <link rel="mask-icon" href="https://inspiring-cat-299a60.netlify.app/.netlify/identity">
+  <link rel="origin" href="https://inspiring-cat-299a60.netlify.app">
+
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
   <script>
-    // 1. 立即设置 API 地址，防止它乱跑
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on('init', () => {
-        // 如果 init 没生效，手动设置
-        console.log("Identity Initialized");
-      });
-      
-      // 关键：强制指定全局 API 根目录
+    // 在全局作用域强制注入地址，防止 store.js 去猜
+    window.netlifyIdentity = window.netlifyIdentity || {};
+    
+    // 强制清理之前的错误缓存
+    localStorage.removeItem('netlifySiteURL');
+    localStorage.setItem('netlifySiteURL', 'https://inspiring-cat-299a60.netlify.app');
+
+    // 监听初始化
+    document.addEventListener('DOMContentLoaded', () => {
       window.netlifyIdentity.init({
         APIConfig: {
           api_url: 'https://inspiring-cat-299a60.netlify.app/.netlify/identity'
         }
       });
-    }
-
-    // 2. 修复 405 问题的关键：手动指定 site_url
-    // 这样它在发 POST 请求时，会发往 netlify.app 而不是当前域名
-    localStorage.setItem('netlifySiteURL', 'https://inspiring-cat-299a60.netlify.app');
+    });
   </script>
 
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
