@@ -2,15 +2,20 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Josh's Admin</title>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
   <script>
-    // 在 CMS 启动前，强行指定 API 的家在哪里
-    // 请务必把下面的 https://... 换成你在 Netlify 看到的那个真实地址
-    localStorage.setItem('netlifySiteURL', 'https://inspiring-cat-299a60.netlify.app');
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.init({
+          APIConfig: {
+            api_url: 'hhttps://inspiring-cat-299a60.netlify.app/.netlify/identity'
+          }
+        });
+      }
+    });
   </script>
   
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
