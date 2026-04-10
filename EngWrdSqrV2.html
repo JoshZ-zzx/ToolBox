@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>单词矩阵检测v2</title>
+    <style>
+        :root {
+            --primary-color: #2196f3;
+            --danger-color: #f44336;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --bg-color: #f0f2f5;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 { color: #1a1a1a; margin-top: 0; }
+
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            max-width: 1200px;
+        }
+
+        /* 计时器独立模块 */
+        .timer-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 180px;
+            border: 2px solid #ddd;
+        }
+
+        .timer-label { font-size: 14px; color: #666; margin-bottom: 5px; }
+        
+        #timerDisplay {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+
+        #timerDisplay.warning { color: var(--danger-color); animation: blink 1s infinite; }
+
+        /* 计时器控制按钮 */
+        .timer-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .btn-ctrl {
+            padding: 8px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-ctrl:hover { background: #f8f9fa; border-color: #bbb; }
+        .btn-ctrl:active { transform: translateY(1px); }
+        .btn-ctrl.primary { background: var(--primary-color); color: white; border: none; }
+        .btn-ctrl.primary:hover { background: #1976d2; }
+
+        @keyframes blink { 50% { opacity: 0.7; } }
+
+        /* 游戏主体容器 */
+        .game-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 30px;
+            position: relative;
+        }
+
+        /* 矩阵样式 */
+        #grid { display: grid; gap: 6px; user-select: none; }
+
+        .cell {
+            width: 42px; height: 42px; border: 1px solid #eee;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; cursor: pointer; border-radius: 6px;
+            background: #fff; transition: 0.2s; font-size: 18px;
+        }
+
+        .cell:hover { background-color: #e3f2fd; }
+        .cell.selected { background-color: var(--primary-color) !important; color: white; }
+        .cell.found { background-color: var(--success-color) !important; color: white; }
+        
+        /* 锁定状态 */
+        .locked { pointer-events: none; opacity: 0.4; filter: grayscale(1); }
+
+        .word-list { min-width: 180px; }
+        .word-item { padding: 8px; margin: 5px 0; border-bottom: 1px solid #f0f0f0; }
+        .word-item.completed { text-decoration: line-through; color: #bbb; }
+
+        /* 模态框 */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 450px; }
+        textarea { width: 100%; height: 100px; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        .btn-main { background: var(--primary-color); color: white; padding: 10px 20px; border:none; border-radius:8px; cursor:pointer;}
+    </style>
+</head>
+<body>
+
+    <h1>英语单词矩阵寻宝</h1>
+
+    <button style="margin-bottom:20px; padding:8px 16px; cursor:pointer;" onclick="openModal()">⚙️ 设置词库与时间</button>
+
+    <div class="main-layout">
+        <div class="timer-panel">
+            <div class="timer-label">剩余时间</div>
+            <div id="timerDisplay">01:00</div>
+            
+            <div class="timer-controls">
+                <button id="startBtn" class="btn-ctrl primary" onclick="resumeGame()" disabled>▶ 继续</button>
+                <button id="pauseBtn" class="btn-ctrl" onclick="pauseGame()">⏸ 暂停</button>
+                <button class="btn-ctrl" onclick="resetGame()">🔄 重置</button>
+            </div>
+
+            <div id="gameStatus" style="font-size: 12px; color: #888; margin-top:15px;">等待开始...</div>
+        </div>
+
+        <div class="game-card" id="gameArea">
+            <div id="grid"></div>
+            <div class="word-list">
+                <h3 style="margin-top:0">待找单词</h3>
+                <ul id="words-to-find" style="padding:0; list-style:none;"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0">挑战配置</h3>
+            <textarea id="wordInput" placeholder="输入单词，空格隔开..."></textarea>
+            <br>
+            <label>倒计时（秒）：</label>
+            <input type="number" id="timeConfig" value="60">
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button onclick="closeModal()">取消</button>
+                <button class="btn-main" onclick="applySettings()">应用并开始</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    let wordList = ["APPLE", "BANANA", "ORANGE", "CHERRY"];
+    let gridSize = 0;
+    let gridData = [];
+    let firstClick = null;
+    let foundWords = [];
+    
+    let timeLeft = 60;
+    let initialTime = 60;
+    let countdownInterval;
+    let isPaused = false;
+    let isGameOver = false;
+
+    // --- 计时器控制 ---
+    function updateTimerUI() {
+        const m = Math.floor(Math.abs(timeLeft) / 60).toString().padStart(2, '0');
+        const s = (Math.abs(timeLeft) % 60).toString().padStart(2, '0');
+        document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+        
+        if (timeLeft <= 10 && !isPaused) {
+            document.getElementById('timerDisplay').classList.add('warning');
+        } else {
+            document.getElementById('timerDisplay').classList.remove('warning');
+        }
+    }
+
+    function pauseGame() {
+        if (isGameOver || isPaused) return;
+        clearInterval(countdownInterval);
+        isPaused = true;
+        document.getElementById('gameArea').classList.add('locked');
+        document.getElementById('gameStatus').textContent = "已暂停";
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('pauseBtn').disabled = true;
+    }
+
+    function resumeGame() {
+        if (isGameOver || !isPaused) return;
+        isPaused = false;
+        document.getElementById('gameArea').classList.remove('locked');
+        document.getElementById('gameStatus').textContent = "挑战进行中...";
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('pauseBtn').disabled = false;
+        
+        countdownInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerUI();
+            if (timeLeft <= 0) endGame(false);
+        }, 1000);
+    }
+
+    function resetGame() {
+        clearInterval(countdownInterval);
+        timeLeft = initialTime;
+        updateTimerUI();
+        initGame(initialTime);
+    }
+
+    function endGame(isWin) {
+        clearInterval(countdownInterval);
+        isGameOver = true;
+        document.getElementById('gameArea').classList.add('locked');
+        document.getElementById('gameStatus').textContent = isWin ? "挑战成功！" : "挑战结束";
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('pauseBtn').disabled = true;
+        setTimeout(() => alert(isWin ? "太棒了！全部找齐！" : "时间到！加油！"), 100);
+    }
+
+    // --- 核心逻辑 ---
+    function openModal() {
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('wordInput').value = wordList.join(' ');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    function applySettings() {
+        const text = document.getElementById('wordInput').value;
+        const newWords = text.trim().split(/[\s,，]+/).filter(w => w.length > 0);
+        initialTime = parseInt(document.getElementById('timeConfig').value) || 60;
+        
+        if (newWords.length > 0) wordList = newWords.map(w => w.toUpperCase());
+        closeModal();
+        resetGame();
+    }
+
+    function initGame(seconds) {
+        foundWords = [];
+        firstClick = null;
+        isGameOver = false;
+        isPaused = false;
+        timeLeft = seconds;
+        
+        document.getElementById('gameArea').classList.remove('locked');
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('pauseBtn').disabled = false;
+
+        const longest = Math.max(...wordList.map(w => w.length));
+        gridSize = Math.max(longest + 3, 8);
+        gridData = Array(gridSize).fill().map(() => Array(gridSize).fill(''));
+        
+        wordList.forEach(word => placeWord(word));
+        fillRandomLetters();
+        renderGrid();
+        renderWordList();
+        updateTimerUI();
+
+        // 自动开始
+        clearInterval(countdownInterval);
+        resumeGame();
+    }
+
+    // (此处省略 placeWord, fillRandomLetters, renderGrid, renderWordList, handleCellClick, checkMatch 函数，逻辑与上一版一致)
+    // 为了保持回复简洁，以上函数逻辑未变，直接包含在下方代码块中。
+
+    function placeWord(word) {
+        let placed = false; let attempts = 0;
+        while (!placed && attempts < 150) {
+            const isVert = Math.random() > 0.5;
+            const r = Math.floor(Math.random() * (isVert ? (gridSize - word.length) : gridSize));
+            const c = Math.floor(Math.random() * (isVert ? gridSize : (gridSize - word.length)));
+            let canPlace = true;
+            for (let i = 0; i < word.length; i++) {
+                const currR = isVert ? r + i : r; const currC = isVert ? c : c + i;
+                if (gridData[currR][currC] !== '' && gridData[currR][currC] !== word[i]) { canPlace = false; break; }
+            }
+            if (canPlace) {
+                for (let i = 0; i < word.length; i++) { gridData[isVert ? r + i : r][isVert ? c : c + i] = word[i]; }
+                placed = true;
+            }
+            attempts++;
+        }
+    }
+
+    function fillRandomLetters() {
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                if (gridData[r][c] === '') gridData[r][c] = letters[Math.floor(Math.random() * letters.length)];
+            }
+        }
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('grid');
+        grid.style.gridTemplateColumns = `repeat(${gridSize}, 42px)`;
+        grid.innerHTML = '';
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell'; cell.textContent = gridData[r][c];
+                cell.dataset.row = r; cell.dataset.col = c;
+                cell.onclick = () => { if(!isGameOver && !isPaused) handleCellClick(r, c, cell) };
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    function renderWordList() {
+        const list = document.getElementById('words-to-find');
+        list.innerHTML = '';
+        wordList.forEach(word => {
+            const li = document.createElement('li');
+            li.className = 'word-item'; li.id = `word-${word}`; li.textContent = word;
+            list.appendChild(li);
+        });
+    }
+
+    function handleCellClick(r, c, el) {
+        if (!firstClick) { firstClick = { r, c, el }; el.classList.add('selected'); } 
+        else { checkMatch(firstClick, { r, c, el }); firstClick.el.classList.remove('selected'); firstClick = null; }
+    }
+
+    function checkMatch(start, end) {
+        let str = ""; let path = [];
+        if (start.r === end.r) {
+            const minC = Math.min(start.c, end.c); const maxC = Math.max(start.c, end.c);
+            for (let i = minC; i <= maxC; i++) { str += gridData[start.r][i]; path.push({r: start.r, c: i}); }
+        } else if (start.c === end.c) {
+            const minR = Math.min(start.r, end.r); const maxR = Math.max(start.r, end.r);
+            for (let i = minR; i <= maxR; i++) { str += gridData[i][start.c]; path.push({r: i, c: start.c}); }
+        }
+        const revStr = str.split('').reverse().join('');
+        const match = wordList.find(w => w === str || w === revStr);
+        if (match && !foundWords.includes(match)) {
+            foundWords.push(match);
+            path.forEach(p => document.querySelector(`.cell[data-row="${p.r}"][data-col="${p.c}"]`).classList.add('found'));
+            document.getElementById(`word-${match}`).classList.add('completed');
+            if (foundWords.length === wordList.length) endGame(true);
+        }
+    }
+
+    initGame(60);
+</script>
+</body>
+</html>

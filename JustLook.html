@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>干瞪眼计分器v4</title>
+    <style>
+        :root { --primary: #27ae60; --danger: #e74c3c; --dark: #2c3e50; --gold: #f39c12; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
+        .container { max-width: 480px; margin: auto; }
+        .card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 12px; }
+        
+        /* 玩家行 */
+        .player-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .player-info { flex: 1; }
+        .name-input { border: none; font-weight: bold; width: 90px; font-size: 16px; border-bottom: 1px dashed #ccc; }
+        .score-display { font-size: 13px; color: #666; margin-top: 4px; }
+        
+        /* 输入区 */
+        .input-num { width: 50px; padding: 8px 0; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-size: 16px; font-weight: bold; }
+        .btn-del { border: none; background: none; color: #ccc; font-size: 20px; padding: 0 10px; cursor: pointer; }
+        
+        /* 结算弹窗 */
+        #billOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
+        .bill-card { background: white; width: 85%; max-width: 350px; border-radius: 16px; padding: 20px; text-align: center; position: relative; }
+        .bill-title { color: var(--gold); font-size: 1.2rem; margin-bottom: 15px; font-weight: bold; }
+        .bill-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 18px; }
+        .winner-text { color: var(--primary); font-weight: bold; font-size: 22px; margin-bottom: 10px; }
+        .pay-text { color: var(--danger); font-weight: bold; }
+        .btn-close { background: var(--dark); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 16px; }
+
+        /* 基础控制 */
+        .calc-box { background: var(--dark); color: white; }
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .spring-tag { font-size: 10px; color: white; background: var(--danger); padding: 2px 4px; border-radius: 3px; display: none; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        th, td { padding: 6px 2px; border-bottom: 1px solid #eee; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="text-align: center; font-size: 1.2rem; color: var(--dark);">🎴 干瞪眼记分助手v4</h1>
+
+    <div class="card" id="playerList"></div>
+
+    <div class="card calc-box">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <span>底分: <input type="number" id="basePrice" value="1" class="input-num" style="width:60px"></span>
+            <span>炸弹数: <input type="number" id="bombCount" value="0" class="input-num" style="width:60px"></span>
+        </div>
+        <button class="btn-main" onclick="execute()">结算并显示账单</button>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+        <button onclick="addPlayer()" style="flex:1; padding: 8px; border-radius: 6px;">+ 玩家</button>
+        <button onclick="resetGame()" style="flex:1; padding: 8px; border-radius: 6px;">重置</button>
+    </div>
+
+    <div class="card" style="padding: 10px;">
+        <h3 style="margin: 0; font-size: 13px; color: #999;">流水记录</h3>
+        <table id="historyTable">
+            <thead><tr id="historyHead"><th>局</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="billOverlay">
+    <div class="bill-card">
+        <div class="bill-title">💰 本局账单</div>
+        <div id="winnerArea" class="winner-text"></div>
+        <div id="billDetails"></div>
+        <button class="btn-close" onclick="closeBill()">确定并返回</button>
+    </div>
+</div>
+
+<script>
+    let players = [
+        { name: '玩家1', total: 0 },
+        { name: '玩家2', total: 0 },
+        { name: '玩家3', total: 0 }
+    ];
+
+    function render() {
+        const list = document.getElementById('playerList');
+        list.innerHTML = '';
+        players.forEach((p, i) => {
+            list.innerHTML += `
+                <div class="player-row">
+                    <button class="btn-del" onclick="removePlayer(${i})">×</button>
+                    <div class="player-info">
+                        <input type="text" class="name-input" value="${p.name}" onchange="players[${i}].name=this.value">
+                        <div class="score-display">总计: ${p.total.toFixed(1)}</div>
+                    </div>
+                    <div class="input-group">
+                        <span class="spring-tag" id="tag-${i}">全关</span>
+                        <span>剩</span>
+                        <input type="number" class="card-count" data-i="${i}" value="0" oninput="checkSpring(${i}, this.value)">
+                        <span>张</span>
+                    </div>
+                </div>
+            `;
+        });
+        updateHeader();
+    }
+
+    function checkSpring(index, val) {
+        document.getElementById(`tag-${index}`).style.display = (parseInt(val) === 5) ? 'inline-block' : 'none';
+    }
+
+    function addPlayer() {
+        players.push({ name: '新玩家', total: 0 });
+        render();
+    }
+
+    function removePlayer(idx) {
+        if(confirm("确定移除该玩家？")) { players.splice(idx, 1); render(); }
+    }
+
+    function execute() {
+        const base = parseFloat(document.getElementById('basePrice').value) || 0;
+        const bombs = parseInt(document.getElementById('bombCount').value) || 0;
+        const inputs = document.querySelectorAll('.card-count');
+        
+        let diffs = new Array(players.length).fill(0);
+        let bills = [];
+        let totalWin = 0;
+        let winners = [];
+
+        // 1. 计算输家
+        players.forEach((p, i) => {
+            let count = parseInt(inputs[i].value) || 0;
+            if (count > 0) {
+                let isSpring = (count === 5) ? 1 : 0;
+                let amt = count * base * Math.pow(2, bombs + isSpring);
+                diffs[i] = -amt;
+                totalWin += amt;
+                bills.push({ name: p.name, amt: amt });
+            } else {
+                winners.push(i);
+            }
+        });
+
+        if (winners.length === 0) return alert("请设置剩牌为0的赢家");
+
+        // 2. 赢家加分
+        let winAvg = totalWin / winners.length;
+        winners.forEach(idx => diffs[idx] = winAvg);
+        players.forEach((p, i) => p.total += diffs[i]);
+
+        // 3. 显示大字账单
+        showBill(winners.map(idx => players[idx].name).join(' & '), bills);
+        
+        // 4. 更新记录
+        log(diffs);
+        document.getElementById('bombCount').value = 0;
+        render();
+    }
+
+    function showBill(wName, details) {
+        document.getElementById('winnerArea').innerText = `🎉 赢家：${wName}`;
+        const detailDiv = document.getElementById('billDetails');
+        detailDiv.innerHTML = details.map(item => `
+            <div class="bill-item">
+                <span>${item.name} 应付</span>
+                <span class="pay-text">${item.amt.toFixed(1)} 元</span>
+            </div>
+        `).join('');
+        document.getElementById('billOverlay').style.display = 'flex';
+    }
+
+    function closeBill() {
+        document.getElementById('billOverlay').style.display = 'none';
+        document.querySelectorAll('.card-count').forEach(i => i.value = 0);
+        document.querySelectorAll('.spring-tag').forEach(t => t.style.display = 'none');
+    }
+
+    function updateHeader() {
+        document.getElementById('historyHead').innerHTML = '<th>局</th>' + 
+            players.map(p => `<th>${p.name.substring(0,2)}</th>`).join('');
+    }
+
+    function log(results) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${document.querySelector('#historyTable tbody').rows.length + 1}</td>` + 
+            results.map(r => `<td style="color:${r>=0?'#27ae60':'#e74c3c'}">${r>0?'+':''}${r.toFixed(1)}</td>`).join('');
+        document.querySelector('#historyTable tbody').prepend(row);
+    }
+
+    function resetGame() {
+        if(confirm("重置全场分数？")) { players.forEach(p => p.total = 0); document.querySelector('#historyTable tbody').innerHTML = ''; render(); }
+    }
+
+    render();
+</script>
+</body>
+</html>
