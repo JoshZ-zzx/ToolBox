@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>干瞪眼计分器X</title>
+    <style>
+        :root { --primary: #27ae60; --danger: #e74c3c; --dark: #2c3e50; --gold: #f39c12; --gray: #95a5a5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f2f5; margin: 0; padding: 10px; color: var(--dark); }
+        
+        .main-layout { display: flex; flex-direction: column; gap: 15px; max-width: 1200px; margin: auto; }
+
+        @media (min-width: 800px) {
+            body { padding: 30px; font-size: 16px; }
+            .main-layout { flex-direction: row; align-items: flex-start; }
+            .left-panel { flex: 1; min-width: 450px; position: sticky; top: 30px; }
+            .right-panel { flex: 1.2; min-width: 350px; }
+            .card { padding: 25px; }
+            .name-input { font-size: 18px; width: 100px; }
+        }
+
+        .card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 15px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-icon { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--dark); padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; transition: 0.2s; }
+
+        .player-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; }
+        .player-row.resting { opacity: 0.4; background: #fcfcfc; }
+        .player-info { flex: 1; margin-left: 12px; }
+        .name-input { border: none; font-weight: bold; font-size: 16px; border-bottom: 1px dashed #ccc; background: transparent; }
+        .score-display { font-size: 13px; color: #7f8c8d; margin-top: 4px; }
+        
+        .status-btn { font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; background: white; }
+        .status-btn.active { color: var(--primary); border-color: var(--primary); background: rgba(39, 174, 96, 0.05); }
+
+        .bomb-ctrl { display: flex; align-items: center; gap: 8px; }
+        .btn-step { width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.15); color: white; cursor: pointer; font-size: 20px; }
+
+        .input-num { width: 60px; padding: 8px 0; border: 1px solid #ddd; border-radius: 8px; text-align: center; font-size: 16px; font-weight: bold; outline: none; }
+        .card-count { width: 45px !important; border: 1px solid #eee; background: #fafafa; }
+        .btn-del { border: none; background: none; color: #ddd; font-size: 24px; padding: 0 10px; cursor: pointer; }
+        
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal-card { background: white; width: 90%; max-width: 380px; border-radius: 20px; padding: 25px; }
+        
+        .modal-card h3 { text-align: center; margin: 0 0 25px 0; color: var(--dark); }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; margin: 18px 0; }
+
+        .btn-main { background: var(--primary); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-close { background: #f8f9fa; color: var(--dark); border: 1px solid #ddd; width: 100%; padding: 12px; border-radius: 12px; margin-top: 10px; cursor: pointer; font-weight: 600; }
+        
+        .spring-tag { font-size: 10px; color: white; background: var(--danger); padding: 2px 6px; border-radius: 4px; display: none; margin-right: 6px; }
+        
+        .history-container { overflow-x: auto; background: #fff; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 450px; }
+        th { background: #f8f9fa; color: #7f8c8d; padding: 12px 8px; border-bottom: 1px solid #eee; }
+        td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; }
+        .cell-win { color: var(--primary); font-weight: bold; background: rgba(39, 174, 96, 0.05); }
+        .cell-loss { color: var(--danger); }
+        
+        /* 删除按钮样式 */
+        .btn-action-del { color: var(--gray); border: none; background: none; cursor: pointer; font-size: 14px; padding: 5px; border-radius: 4px; }
+        .btn-action-del:hover { color: var(--danger); background: #fff0f0; }
+        
+        @keyframes flash {
+            0% { background: rgba(255,255,255,0.1); }
+            50% { background: rgba(243, 156, 18, 0.6); }
+            100% { background: rgba(255,255,255,0.1); }
+        }
+        .bomb-flash { animation: flash 0.3s ease; }
+    </style>
+</head>
+<body>
+
+<div class="main-layout">
+    <div class="left-panel">
+        <div class="header">
+            <h1 style="font-size: 1.3rem; margin: 0; display: flex; align-items: center; gap: 8px;">🎴 干瞪眼计分器 <span style="font-size: 0.8rem; background: var(--dark); color: white; padding: 2px 6px; border-radius: 4px;">X终极版</span></h1>
+            <button class="btn-icon" onclick="openModal('settingsModal')" tabindex="-1">⚙️ 设置</button>
+        </div>
+
+        <div class="card" id="playerList"></div>
+
+        <div class="card" style="background: var(--dark); color: white;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="display:flex; flex-direction:column">
+                    <span style="font-size: 15px; font-weight: bold;">💣 炸弹总数</span>
+                    <span style="font-size: 11px; opacity: 0.6;">快捷键: +/-/b</span>
+                </div>
+                <div class="bomb-ctrl">
+                    <button class="btn-step" onclick="changeBomb(-1)" tabindex="-1">−</button>
+                    <input type="number" id="bombCount" value="0" class="input-num" 
+                           style="border:none; background:rgba(255,255,255,0.1); color:white" tabindex="10">
+                    <button class="btn-step" onclick="changeBomb(1)" tabindex="-1">+</button>
+                </div>
+            </div>
+            <button id="btnExecute" class="btn-main" onclick="execute()" tabindex="11">开始结算</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button onclick="addPlayer()" style="flex:1; padding: 12px; border-radius: 10px; border:1px solid #ddd; background:white; cursor:pointer;" tabindex="-1">+ 玩家</button>
+            <button onclick="resetGame()" style="flex:1; padding: 12px; border-radius: 10px; border:1px solid #ddd; background:white; cursor:pointer;" tabindex="-1">重置全场</button>
+        </div>
+    </div>
+
+    <div class="right-panel">
+        <div class="card" style="min-height: 400px;">
+            <h3 id="historyTitle" style="margin: 0 0 15px 0; font-size: 16px; border-left: 4px solid var(--primary); padding-left: 10px;">流水账单</h3>
+            <div class="history-container">
+                <table id="historyTable">
+                    <thead><tr id="historyHead"><th>局</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态框保持不变... -->
+<div id="settingsModal" class="overlay">
+    <div class="modal-card">
+        <h3>游戏设置</h3>
+        <div class="setting-row"><span>基础底分</span><input type="number" id="basePrice" value="0.5" class="input-num" step="0.1"></div>
+        <div class="setting-row"><span>开启封顶</span><input type="checkbox" id="isCapEnabled" onchange="toggleCapUI()"></div>
+        <div id="capValueRow" class="setting-row" style="display:none; color:var(--danger)"><span>单局上限</span><input type="number" id="capLimit" value="20" class="input-num"></div>
+        <button class="btn-close" onclick="closeModal('settingsModal')">保存设置</button>
+    </div>
+</div>
+
+<div id="billModal" class="overlay">
+    <div class="modal-card" style="text-align: center;">
+        <div style="color:var(--gold); font-weight:bold; margin-bottom:10px;">💰 本局清算</div>
+        <div id="winnerArea" style="color:var(--primary); font-size:24px; font-weight:bold; margin-bottom:15px"></div>
+        <div id="billDetails" style="text-align:left"></div>
+        <button id="btnConfirmBill" class="btn-main" onclick="closeModal('billModal')" style="margin-top:20px">收钱！继续 (回车)</button>
+    </div>
+</div>
+
+<script>
+    const generateId = () => 'p_' + Math.random().toString(36).substr(2, 9);
+    let players = [
+        { id: generateId(), name: '玩家1', total: 0, isResting: false },
+        { id: generateId(), name: '玩家2', total: 0, isResting: false },
+        { id: generateId(), name: '玩家3', total: 0, isResting: false }
+    ];
+    let history = [];
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const billModal = document.getElementById('billModal');
+            if (billModal.style.display === 'flex') {
+                e.preventDefault();
+                closeModal('billModal');
+            }
+        }
+    });
+
+    function render() {
+        const list = document.getElementById('playerList');
+        list.innerHTML = '';
+        players.forEach((p, i) => {
+            list.innerHTML += `
+                <div class="player-row ${p.isResting ? 'resting' : ''}">
+                    <button class="btn-del" onclick="removePlayer('${p.id}')" tabindex="-1">×</button>
+                    <button class="status-btn ${p.isResting ? '' : 'active'}" onclick="toggleRest('${p.id}')" tabindex="-1">
+                        ${p.isResting ? '💤 小憩' : '🃏 在线'}
+                    </button>
+                    <div class="player-info">
+                        <input type="text" class="name-input" value="${p.name}" onchange="updatePlayerName('${p.id}', this.value)" tabindex="-1">
+                        <div class="score-display">累计: <b>${p.total.toFixed(1)}</b></div>
+                    </div>
+                    <div style="${p.isResting ? 'display:none' : 'display:flex; align-items:center'}">
+                        <span class="spring-tag" id="tag-${p.id}">全关</span>
+                        <input type="number" class="card-count input-num" data-pid="${p.id}" value="0" 
+                               oninput="checkSpring('${p.id}', this.value)"
+                               onfocus="this.select()"
+                               onkeydown="handleKey(event, ${i})">
+                        <span style="font-size:12px; margin-left:5px; color:#95a5a5">张</span>
+                    </div>
+                </div>
+            `;
+        });
+        updateHeader();
+        updateHistoryTable();
+        updateTitle();
+    }
+
+    // 【新增：重计算总分逻辑】
+    function recalculateTotals() {
+        players.forEach(p => p.total = 0);
+        history.forEach(round => {
+            players.forEach(p => {
+                const score = round[p.id];
+                if (score !== undefined && score !== null) {
+                    p.total += score;
+                }
+            });
+        });
+    }
+
+    // 【新增：删除特定局历史】
+    function deleteHistory(originalIndex) {
+        if (confirm(`确定要删除第 ${originalIndex + 1} 局的记录吗？(总分将自动重算)`)) {
+            history.splice(originalIndex, 1);
+            recalculateTotals();
+            render();
+        }
+    }
+
+    function execute() {
+        const base = parseFloat(document.getElementById('basePrice').value) || 0;
+        const bombs = parseInt(document.getElementById('bombCount').value) || 0;
+        const isCap = document.getElementById('isCapEnabled').checked;
+        const capLimit = parseFloat(document.getElementById('capLimit').value) || 999;
+        
+        let roundResults = {}, winnerIds = [], totalLost = 0, bills = [];
+
+        players.forEach(p => {
+            if (p.isResting) { roundResults[p.id] = null; return; }
+            const input = document.querySelector(`.card-count[data-pid="${p.id}"]`);
+            const count = input ? (parseInt(input.value) || 0) : 0;
+            if (count > 0) {
+                let amt = count * base * Math.pow(2, bombs + (count === 5 ? 1 : 0));
+                if (isCap && amt > capLimit) amt = capLimit;
+                roundResults[p.id] = -amt;
+                totalLost += amt;
+                bills.push({ name: p.name, amt: amt });
+            } else { winnerIds.push(p.id); }
+        });
+
+        if (!winnerIds.length) return alert("谁赢了？(剩牌为0的玩家)");
+        let winAvg = totalLost / winnerIds.length;
+        winnerIds.forEach(id => roundResults[id] = winAvg);
+        
+        // 存入历史并重算
+        history.push(roundResults);
+        recalculateTotals();
+
+        showBill(winnerIds.map(id => players.find(x => x.id === id).name).join(' & '), bills);
+        document.getElementById('bombCount').value = 0;
+        document.querySelectorAll('.card-count').forEach(i => i.value = 0);
+        render();
+    }
+
+    function updateHeader() {
+        document.getElementById('historyHead').innerHTML = '<th>局</th>' + 
+            players.map(p => `<th>${p.name.substring(0,3)}</th>`).join('') +
+            '<th>操作</th>'; // 增加操作列
+    }
+
+    function updateHistoryTable() {
+        const tbody = document.querySelector('#historyTable tbody');
+        tbody.innerHTML = history.slice().reverse().map((round, idx) => {
+            const originalIndex = history.length - 1 - idx; // 计算在原始数组中的位置
+            return `
+                <tr>
+                    <td>${originalIndex + 1}</td>
+                    ${players.map(p => {
+                        let v = round[p.id];
+                        if (v === null || v === undefined) return '<td style="color:#ccc">-</td>';
+                        return `<td class="${v > 0 ? 'cell-win' : (v < 0 ? 'cell-loss' : '')}">${v > 0 ? '+' : ''}${v.toFixed(1)}</td>`;
+                    }).join('')}
+                    <td>
+                        <button class="btn-action-del" onclick="deleteHistory(${originalIndex})" title="删除此局">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // 其余辅助函数保持不变...
+    function handleKey(e, currentIndex) {
+        if (['+', '=', 'b', 'B'].includes(e.key)) { e.preventDefault(); changeBomb(1); return; }
+        if (e.key === '-') { e.preventDefault(); changeBomb(-1); return; }
+        if (e.key === 'Enter') {
+            const allInputs = Array.from(document.querySelectorAll('.card-count'));
+            const activeInputs = allInputs.filter(input => input.parentElement.style.display !== 'none');
+            const currentInActiveIdx = activeInputs.indexOf(e.target);
+            if (currentInActiveIdx < activeInputs.length - 1) { activeInputs[currentInActiveIdx + 1].focus(); } else { execute(); }
+        }
+    }
+    function changeBomb(val) {
+        const bombInput = document.getElementById('bombCount');
+        bombInput.value = Math.max(0, (parseInt(bombInput.value) || 0) + val);
+        bombInput.classList.remove('bomb-flash');
+        void bombInput.offsetWidth;
+        bombInput.classList.add('bomb-flash');
+    }
+    function updatePlayerName(id, newName) { const p = players.find(x => x.id === id); if (p) p.name = newName; updateHeader(); }
+    function toggleRest(id) { const p = players.find(x => x.id === id); if (p) p.isResting = !p.isResting; render(); }
+    function checkSpring(id, val) { document.getElementById(`tag-${id}`).style.display = (parseInt(val) === 5) ? 'inline-block' : 'none'; }
+    function toggleCapUI() { document.getElementById('capValueRow').style.display = document.getElementById('isCapEnabled').checked ? 'flex' : 'none'; }
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; if(id === 'billModal') { const firstInput = document.querySelector('.player-row:not(.resting) .card-count'); if(firstInput) firstInput.focus(); } }
+    function addPlayer() { players.push({ id: generateId(), name: '新玩家', total: 0, isResting: false }); render(); }
+    function removePlayer(id) { if(confirm("移除该玩家？")) { players = players.filter(p => p.id !== id); render(); } }
+    function updateTitle() { const isCap = document.getElementById('isCapEnabled').checked; document.getElementById('historyTitle').innerText = isCap ? `流水 (封顶: ${document.getElementById('capLimit').value})` : "实时流水账单"; }
+    function showBill(wNames, details) {
+        document.getElementById('winnerArea').innerText = `🏆 ${wNames}`;
+        document.getElementById('billDetails').innerHTML = details.map(d => `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px dashed #eee; font-size:18px"><span>${d.name}</span><span style="color:var(--danger); font-weight:bold">−${d.amt.toFixed(1)}</span></div>`).join('') || '<div style="text-align:center;color:#999;padding:20px">本局无人支出</div>';
+        openModal('billModal');
+    }
+    function resetGame() { if(confirm("确定清空所有积分和历史记录吗？")) { players.forEach(p => p.total = 0); history = []; render(); } }
+
+    render();
+</script>
+</body>
+</html>
