@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收银系统v3.5</title>
+    <style>
+        :root {
+            --bg: #eef2f6;
+            --panel: #ffffff;
+            --line: #e5e9ef;
+            --text: #1f2d3d;
+            --muted: #6b7785;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --dark: #111827;
+            --shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, "Microsoft YaHei", sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+        .app-shell { max-width: 1440px; margin: 0 auto; padding: 14px; }
+        .topbar {
+            height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: var(--dark); color: white; border-radius: 14px; padding: 0 16px; margin-bottom: 14px; box-shadow: var(--shadow);
+        }
+        .brand { display: flex; align-items: baseline; gap: 10px; white-space: nowrap; }
+        .brand h1 { font-size: 1.25rem; letter-spacing: 0.02em; }
+        .brand span { color: #cbd5e1; font-size: 0.9rem; }
+        .top-stats { display: flex; align-items: center; gap: 16px; font-size: 0.95rem; color: #e5e7eb; }
+        .top-stats strong { color: #ffffff; font-size: 1.05rem; }
+        .top-actions { display: flex; align-items: center; gap: 8px; }
+        .btn {
+            min-height: 42px; padding: 0 14px; border: none; border-radius: 10px; cursor: pointer;
+            font-weight: 700; transition: transform 0.15s, filter 0.15s; white-space: nowrap;
+        }
+        .btn:hover { transform: translateY(-1px); filter: brightness(0.98); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-secondary { background: #64748b; color: white; }
+        .btn-light { background: #e5e7eb; color: #111827; }
+        .btn-ghost { background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.18); }
+        .main-workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(380px, 0.95fr); gap: 14px; height: calc(100vh - 86px); min-height: 640px; }
+        .panel { background: var(--panel); border-radius: 16px; box-shadow: var(--shadow); min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+        .panel-header { padding: 16px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .panel-header h2 { font-size: 1.15rem; color: var(--text); }
+        .panel-subtitle { color: var(--muted); font-size: 0.9rem; }
+        .product-toolbar { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+        .form-control { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 1rem; outline: none; background: white; }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+        .product-grid { padding: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; overflow-y: auto; align-content: start; }
+        .product-card { border: 1px solid var(--line); background: #f8fafc; border-radius: 16px; padding: 16px; min-height: 86px; text-align: left; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s; }
+        .product-card:hover { transform: translateY(-2px); border-color: #93c5fd; box-shadow: 0 8px 16px rgba(37, 99, 235, 0.10); }
+        .product-name { font-size: 1.08rem; font-weight: 800; line-height: 1.25; color: #111827; word-break: break-word; }
+        .product-price { margin-top: 10px; font-size: 1.15rem; font-weight: 900; color: var(--primary); }
+        .order-panel { position: relative; }
+        .cart-list { padding: 12px 18px; overflow-y: auto; flex: 1; min-height: 120px; }
+        .cart-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: center; }
+        .cart-title { font-weight: 800; font-size: 1.02rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cart-meta { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+        .cart-amount { text-align: right; font-weight: 900; font-size: 1.05rem; }
+        .cart-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+        .qty-btn { width: 38px; height: 38px; border-radius: 50%; border: none; background: #e5e7eb; cursor: pointer; font-size: 1.2rem; font-weight: 900; }
+        .qty-input { width: 58px; height: 38px; text-align: center; border: 1px solid #d1d5db; border-radius: 10px; font-weight: 800; }
+        .mini-danger { width: 38px; height: 38px; border-radius: 10px; border: none; background: #fee2e2; color: #b91c1c; cursor: pointer; font-weight: 900; }
+        .discount-item { color: #b45309; }
+        .empty-state { padding: 34px 20px; text-align: center; color: var(--muted); }
+        .checkout-zone { border-top: 1px solid var(--line); padding: 14px 18px 18px; background: #fbfdff; }
+        .quick-discount { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+        .quick-discount .btn { min-height: 38px; padding: 0 8px; }
+        .custom-discount { display: grid; grid-template-columns: 0.9fr 1fr auto; gap: 8px; margin-bottom: 12px; }
+        .summary-box { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 12px 0; margin-bottom: 12px; }
+        .summary-line { display: flex; justify-content: space-between; color: var(--muted); margin: 4px 0; }
+        .amount-due { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 8px; }
+        .amount-due span { color: var(--muted); font-weight: 700; }
+        .amount-due strong { font-size: 2.6rem; line-height: 1; color: #0f172a; letter-spacing: -0.03em; }
+        .payment-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+        .payment-option { min-height: 54px; border: 2px solid var(--line); background: #ffffff; border-radius: 12px; cursor: pointer; font-weight: 900; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+        .payment-option.selected { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+        .payment-option.unset { color: #9ca3af; background: #f3f4f6; }
+        .cash-row { display: none; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+        .change-box { background: #ecfdf5; color: #166534; border: 1px solid #bbf7d0; border-radius: 12px; padding: 10px 12px; font-weight: 900; display: none; }
+        .qr-inline { display: none; text-align: center; padding: 10px; border: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 12px; margin-bottom: 10px; }
+        .qr-inline img { max-width: 140px; max-height: 140px; background: white; padding: 5px; border: 1px solid var(--line); }
+        .remarks-input { min-height: 48px; resize: vertical; margin-bottom: 10px; }
+        .checkout-actions { display: grid; grid-template-columns: 0.8fr 1.4fr; gap: 10px; }
+        .checkout-actions .btn-success { min-height: 58px; font-size: 1.2rem; }
+        .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 18px; }
+        .modal-content { width: min(980px, 96vw); max-height: 92vh; background: white; border-radius: 18px; box-shadow: 0 20px 50px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column; }
+        .modal-header { padding: 16px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; }
+        .modal-header h2 { font-size: 1.2rem; }
+        .modal-body { padding: 18px; overflow: auto; }
+        .modal-footer { padding: 14px 18px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 180px auto; gap: 10px; margin-bottom: 18px; }
+        .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        .setting-card { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: #f8fafc; }
+        .setting-card h3 { margin-bottom: 10px; }
+        .img-preview-box { margin: 10px 0; text-align: center; border: 1px dashed #cbd5e1; background: white; padding: 12px; border-radius: 12px; }
+        .img-preview { max-width: 150px; max-height: 150px; object-fit: contain; }
+        .table-wrap { width: 100%; overflow-x: auto; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { padding: 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+        .table th { background: #f8fafc; }
+        .notification { position: fixed; top: 18px; right: 18px; padding: 14px 18px; border-radius: 12px; color: white; font-weight: 800; z-index: 1001; max-width: 380px; display: none; box-shadow: var(--shadow); }
+        @media (max-width: 1050px) {
+            .main-workspace { grid-template-columns: 1fr; height: auto; }
+            .order-panel { min-height: 640px; }
+            .topbar { height: auto; flex-wrap: wrap; padding: 12px; }
+            .top-stats { order: 3; width: 100%; justify-content: space-between; }
+        }
+        @media (max-width: 680px) {
+            .app-shell { padding: 8px; }
+            .product-toolbar, .custom-discount, .form-grid, .settings-grid { grid-template-columns: 1fr; }
+            .quick-discount { grid-template-columns: repeat(2, 1fr); }
+            .amount-due strong { font-size: 2rem; }
+            .top-actions { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <h1>收银系统</h1>
+                <span>v3.5 工作台布局</span>
+            </div>
+            <div class="top-stats">
+                <div>今日订单 <strong id="todayTransactions">0</strong> 笔</div>
+                <div>今日收入 <strong id="todayRevenue">¥0.00</strong></div>
+            </div>
+            <div class="top-actions">
+                <button onclick="openProductManager()" class="btn btn-ghost">商品管理</button>
+                <button onclick="openLedgerModal()" class="btn btn-ghost">今日账本</button>
+                <button onclick="openSettingsModal()" class="btn btn-ghost">设置</button>
+                <button onclick="openKitchenDisplay()" class="btn btn-warning">后厨屏</button>
+            </div>
+        </header>
+
+        <main class="main-workspace">
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>商品快捷区</h2>
+                        <div class="panel-subtitle">点击商品卡片即可加入当前订单</div>
+                    </div>
+                    <button onclick="openProductManager()" class="btn btn-primary">新增商品</button>
+                </div>
+                <div class="product-toolbar">
+                    <input type="text" id="productSearch" class="form-control" placeholder="搜索商品名称" oninput="renderProducts()">
+                    <button onclick="clearProductSearch()" class="btn btn-light">清除搜索</button>
+                </div>
+                <div id="productGrid" class="product-grid"></div>
+                <div id="emptyProducts" class="empty-state">暂无商品，请先添加商品</div>
+            </section>
+
+            <section class="panel order-panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>当前订单</h2>
+                        <div class="panel-subtitle">右侧直接完成优惠、收款和备注</div>
+                    </div>
+                    <button onclick="clearCart()" class="btn btn-danger">清空订单</button>
+                </div>
+                <div id="cartList" class="cart-list"></div>
+                <div id="emptyCart" class="empty-state">购物车为空，请从左侧选择商品</div>
+
+                <div class="checkout-zone">
+                    <div class="quick-discount">
+                        <button onclick="addQuickDiscount(1)" class="btn btn-light">减 1</button>
+                        <button onclick="addQuickDiscount(2)" class="btn btn-light">减 2</button>
+                        <button onclick="addQuickDiscount(5)" class="btn btn-light">减 5</button>
+                        <button onclick="focusCustomDiscount()" class="btn btn-light">自定义</button>
+                    </div>
+                    <div class="custom-discount">
+                        <input type="number" id="discountAmount" class="form-control" placeholder="优惠金额" step="0.01" min="0.01">
+                        <input type="text" id="discountReason" class="form-control" placeholder="优惠原因，可选">
+                        <button onclick="addDiscount()" class="btn btn-warning">添加优惠</button>
+                    </div>
+
+                    <div class="summary-box">
+                        <div class="summary-line"><span>商品数量</span><strong id="totalItems">0</strong></div>
+                        <div class="summary-line"><span>优惠金额</span><strong id="discountTotal">¥0.00</strong></div>
+                        <div class="amount-due"><span>应收金额</span><strong id="totalAmount">¥0.00</strong></div>
+                    </div>
+
+                    <textarea id="orderRemarks" class="form-control remarks-input" placeholder="订单备注，例如：少冰、不要香菜、多放辣（可选）"></textarea>
+
+                    <div class="payment-options">
+                        <button class="payment-option" onclick="selectPayment('cash', this)">现金</button>
+                        <button id="payWechat" class="payment-option" onclick="selectPayment('wechat', this)">微信</button>
+                        <button id="payAlipay" class="payment-option" onclick="selectPayment('alipay', this)">支付宝</button>
+                    </div>
+                    <div id="qrCodeDisplay" class="qr-inline">
+                        <img id="checkoutQrImage" src="" alt="收款码">
+                        <div id="checkoutQrText" style="margin-top:8px;font-weight:800;"></div>
+                    </div>
+                    <div id="cashInput" class="cash-row">
+                        <input type="number" id="cashReceived" class="form-control" placeholder="实收金额" step="0.01" min="0">
+                        <div id="changeDisplay" class="change-box">找零：<span id="changeAmount">0.00</span> 元</div>
+                    </div>
+                    <div class="checkout-actions">
+                        <button onclick="resetPaymentSelection()" class="btn btn-light">重选支付</button>
+                        <button onclick="completePayment()" class="btn btn-success">确认收款</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>商品管理</h2>
+                <button onclick="closeModal('productModal')" class="btn btn-light">关闭</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <input type="text" id="productName" class="form-control" placeholder="商品名称">
+                    <input type="number" id="productPrice" class="form-control" placeholder="价格" step="0.01" min="0.01">
+                    <button onclick="addProduct()" class="btn btn-primary">添加商品</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>商品</th><th>价格</th><th>操作</th></tr></thead>
+                        <tbody id="productManageList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ledgerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>交易账本</h2>
+                <button onclick="closeModal('ledgerModal')" class="btn btn-light">关闭</button>
+            </div>
+            <div class="modal-body">
+                <div class="summary-line" style="margin-bottom:12px;"><span>总交易笔数</span><strong id="totalTransactions">0</strong></div>
+                <div class="summary-line" style="margin-bottom:12px;"><span>总收入</span><strong id="totalRevenue">0.00</strong></div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>订单号</th><th>时间</th><th>支付方式</th><th>金额</th><th>优惠</th><th>实收</th><th>找零</th><th>备注</th></tr></thead>
+                        <tbody id="ledgerList"></tbody>
+                    </table>
+                </div>
+                <div id="emptyLedger" class="empty-state">暂无交易记录</div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="exportData()" class="btn btn-primary">导出数据</button>
+                <button onclick="importData()" class="btn btn-warning">导入数据</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>系统设置</h2>
+                <button onclick="closeModal('settingsModal')" class="btn btn-light">关闭</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>微信收款码</h3>
+                        <input type="file" accept="image/*" class="form-control" onchange="uploadQrCode('wechat', this)">
+                        <div class="img-preview-box">
+                            <img id="preview-wechat" class="img-preview" src="" style="display:none;" alt="微信收款码">
+                            <div id="text-wechat" style="color:#64748b;">暂未设置</div>
+                        </div>
+                        <button onclick="clearQrCode('wechat')" class="btn btn-danger" style="width:100%;">清除微信码</button>
+                    </div>
+                    <div class="setting-card">
+                        <h3>支付宝收款码</h3>
+                        <input type="file" accept="image/*" class="form-control" onchange="uploadQrCode('alipay', this)">
+                        <div class="img-preview-box">
+                            <img id="preview-alipay" class="img-preview" src="" style="display:none;" alt="支付宝收款码">
+                            <div id="text-alipay" style="color:#64748b;">暂未设置</div>
+                        </div>
+                        <button onclick="clearQrCode('alipay')" class="btn btn-danger" style="width:100%;">清除支付宝码</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button onclick="importData()" class="btn btn-warning">导入数据</button>
+                <button onclick="exportData()" class="btn btn-primary">导出数据</button>
+                <button onclick="clearAllData()" class="btn btn-danger">清空业务数据</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        const QR_MAX_SIZE = 3 * 1024 * 1024;
+        const MAX_QUANTITY = 999;
+        const PAYMENT_NAMES = { cash: '现金', wechat: '微信', alipay: '支付宝' };
+        const DISCOUNT_TYPE = 'discount';
+
+        function loadData(key, defaultValue) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (raw === null) return defaultValue;
+                const parsed = JSON.parse(raw);
+                return parsed === null || parsed === undefined ? defaultValue : parsed;
+            } catch (error) {
+                console.warn(`读取 ${key} 失败，已使用默认值`, error);
+                return defaultValue;
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function createId(prefix = 'id') {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') return `${prefix}_${window.crypto.randomUUID()}`;
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        }
+
+        function toMoney(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number.toFixed(2) : '0.00';
+        }
+
+        function normalizeQuantity(value) {
+            const quantity = Math.floor(Number(value));
+            if (!Number.isFinite(quantity) || quantity < 1) return 1;
+            return Math.min(quantity, MAX_QUANTITY);
+        }
+
+        function normalizeProduct(product) {
+            return { id: String(product?.id || createId('prod')), name: String(product?.name || '未命名商品'), price: toMoney(Math.abs(Number(product?.price) || 0)) };
+        }
+
+        function normalizeCartItem(item) {
+            const id = String(item?.id || createId(item?.type === DISCOUNT_TYPE ? 'disc' : 'cart'));
+            const type = item?.type === DISCOUNT_TYPE || Number(item?.price) < 0 ? DISCOUNT_TYPE : 'product';
+            if (type === DISCOUNT_TYPE) {
+                const amount = Math.abs(Number(item?.amount ?? item?.price) || 0);
+                const reason = String(item?.reason || item?.name || '优惠减免').replace(/^优惠减免[:：]?\s*/, '');
+                return { id, type: DISCOUNT_TYPE, name: reason ? `优惠减免：${reason}` : '优惠减免', reason, amount: toMoney(amount), price: toMoney(-amount), quantity: 1 };
+            }
+            return { id, type: 'product', name: String(item?.name || '未命名商品'), price: toMoney(Number(item?.price) || 0), quantity: normalizeQuantity(item?.quantity) };
+        }
+
+        function normalizeTransaction(t) {
+            const items = Array.isArray(t?.items) ? t.items.map(normalizeCartItem) : [];
+            const discount = Number(t?.discount ?? calculateDiscount(items));
+            return {
+                id: String(t?.id || createId('txn')),
+                orderNumber: Number.isFinite(Number(t?.orderNumber)) ? Number(t.orderNumber) : '',
+                time: String(t?.time || ''),
+                method: ['cash', 'wechat', 'alipay'].includes(t?.method) ? t.method : 'cash',
+                total: toMoney(t?.total), discount: toMoney(discount), cash: toMoney(t?.cash), change: toMoney(t?.change), items,
+                remarks: String(t?.remarks || '')
+            };
+        }
+
+        function normalizeKitchenOrder(order) {
+            return {
+                id: String(order?.id || createId('order')),
+                orderNumber: Number.isFinite(Number(order?.orderNumber)) ? Number(order.orderNumber) : '',
+                time: String(order?.time || ''),
+                createdAt: Number(order?.createdAt || Date.now()),
+                items: Array.isArray(order?.items) ? order.items.map(item => ({ name: String(item?.name || '未命名商品'), quantity: normalizeQuantity(item?.quantity) })) : [],
+                completed: Boolean(order?.completed),
+                remarks: String(order?.remarks || '')
+            };
+        }
+
+        function normalizePaymentSettings(settings) {
+            return { wechat: typeof settings?.wechat === 'string' ? settings.wechat : '', alipay: typeof settings?.alipay === 'string' ? settings.alipay : '' };
+        }
+
+        function calculateCartTotal(items = cart) {
+            return items.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity || 1), 0);
+        }
+
+        function calculateDiscount(items = cart) {
+            return items.filter(item => item.type === DISCOUNT_TYPE).reduce((sum, item) => sum + Math.abs(Number(item.amount ?? item.price) || 0), 0);
+        }
+
+        function getProductItems(items = cart) { return items.filter(item => item.type !== DISCOUNT_TYPE); }
+
+        let products = Array.isArray(loadData('products', [])) ? loadData('products', []).map(normalizeProduct).filter(p => Number(p.price) > 0) : [];
+        let cart = Array.isArray(loadData('cart', [])) ? loadData('cart', []).map(normalizeCartItem).filter(item => Number(item.price) !== 0) : [];
+        let ledger = Array.isArray(loadData('ledger', [])) ? loadData('ledger', []).map(normalizeTransaction) : [];
+        let kitchenOrders = Array.isArray(loadData('kitchenOrders', [])) ? loadData('kitchenOrders', []).map(normalizeKitchenOrder) : [];
+        let paymentSettings = normalizePaymentSettings(loadData('paymentSettings', {wechat: '', alipay: ''}));
+        let selectedPayment = null;
+        let kitchenWindow = null;
+        let orderCounter = Number.isFinite(parseInt(localStorage.getItem('orderCounter'), 10)) ? parseInt(localStorage.getItem('orderCounter'), 10) : 1000;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts(); renderCart(); renderLedger(); renderSettings(); updateTodayStats(); updatePaymentButtons();
+            document.getElementById('cashReceived').addEventListener('input', calculateChange);
+            window.addEventListener('message', function(event) {
+                if (event.source !== kitchenWindow) return;
+                if (event.data && event.data.type === 'orderCompleted') completeKitchenOrder(event.data.orderId);
+            });
+            saveData();
+        });
+
+        function saveData() {
+            try {
+                localStorage.setItem('products', JSON.stringify(products));
+                localStorage.setItem('cart', JSON.stringify(cart));
+                localStorage.setItem('ledger', JSON.stringify(ledger));
+                localStorage.setItem('kitchenOrders', JSON.stringify(kitchenOrders));
+                localStorage.setItem('orderCounter', orderCounter.toString());
+                localStorage.setItem('paymentSettings', JSON.stringify(paymentSettings));
+            } catch (error) {
+                console.error(error);
+                showMessage('保存失败：浏览器本地存储空间可能不足，请先导出数据或清理收款码图片', 'error');
+            }
+        }
+
+        function isToday(timeValue) {
+            if (!timeValue) return false;
+            const today = new Date().toLocaleDateString();
+            return String(timeValue).includes(today);
+        }
+
+        function updateTodayStats() {
+            const todays = ledger.filter(t => isToday(t.time));
+            const revenue = todays.reduce((sum, t) => sum + (Number(t.total) || 0), 0);
+            document.getElementById('todayTransactions').textContent = todays.length;
+            document.getElementById('todayRevenue').textContent = `¥${revenue.toFixed(2)}`;
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function openProductManager() { renderProductManageList(); openModal('productModal'); setTimeout(() => document.getElementById('productName').focus(), 80); }
+        function openLedgerModal() { renderLedger(); openModal('ledgerModal'); }
+        function openSettingsModal() { renderSettings(); openModal('settingsModal'); }
+        function clearProductSearch() { document.getElementById('productSearch').value = ''; renderProducts(); }
+
+        function uploadQrCode(type, input) {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > QR_MAX_SIZE) {
+                input.value = '';
+                return showMessage('图片过大，请使用小于 3MB 的图片', 'error');
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                paymentSettings[type] = e.target.result;
+                saveData(); renderSettings(); updatePaymentButtons();
+                showMessage(`${type === 'wechat' ? '微信' : '支付宝'}收款码设置成功`, 'success');
+            };
+            reader.onerror = function() { showMessage('图片读取失败，请重新选择图片', 'error'); };
+            reader.readAsDataURL(file);
+        }
+
+        function clearQrCode(type) {
+            if (confirm('确定要清除该收款码吗？')) {
+                paymentSettings[type] = '';
+                saveData(); renderSettings(); updatePaymentButtons(); resetPaymentSelection();
+                document.querySelectorAll('input[type="file"]').forEach(i => i.value = '');
+                showMessage('收款码已清除', 'success');
+            }
+        }
+
+        function renderSettings() {
+            ['wechat', 'alipay'].forEach(type => {
+                const img = document.getElementById(`preview-${type}`);
+                const txt = document.getElementById(`text-${type}`);
+                if (paymentSettings[type]) { img.src = paymentSettings[type]; img.style.display = 'inline-block'; txt.style.display = 'none'; }
+                else { img.removeAttribute('src'); img.style.display = 'none'; txt.style.display = 'block'; }
+            });
+        }
+
+        function updatePaymentButtons() {
+            const wechat = document.getElementById('payWechat');
+            const alipay = document.getElementById('payAlipay');
+            if (!wechat || !alipay) return;
+            wechat.textContent = paymentSettings.wechat ? '微信 ✓' : '微信 未设置';
+            alipay.textContent = paymentSettings.alipay ? '支付宝 ✓' : '支付宝 未设置';
+            wechat.classList.toggle('unset', !paymentSettings.wechat);
+            alipay.classList.toggle('unset', !paymentSettings.alipay);
+        }
+
+        function addProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = Number(document.getElementById('productPrice').value);
+            if (!name || !Number.isFinite(price) || price <= 0) return showMessage('请输入有效的商品名称和大于 0 的价格；优惠请用当前订单里的优惠功能', 'error');
+            products.push({id: createId('prod'), name, price: price.toFixed(2)});
+            saveData(); renderProducts(); renderProductManageList();
+            showMessage(`商品“${name}”添加成功`, 'success');
+            document.getElementById('productName').value = ''; document.getElementById('productPrice').value = ''; document.getElementById('productName').focus();
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            const empty = document.getElementById('emptyProducts');
+            const keyword = (document.getElementById('productSearch')?.value || '').trim().toLowerCase();
+            const visibleProducts = keyword ? products.filter(p => p.name.toLowerCase().includes(keyword)) : products;
+            if (visibleProducts.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; empty.textContent = products.length ? '没有匹配的商品' : '暂无商品，请先添加商品'; return; }
+            empty.style.display = 'none';
+            grid.innerHTML = visibleProducts.map(p => `
+                <button class="product-card" onclick='addToCart(${JSON.stringify(p.id)})'>
+                    <span class="product-name">${escapeHtml(p.name)}</span>
+                    <span class="product-price">¥${toMoney(p.price)}</span>
+                </button>
+            `).join('');
+        }
+
+        function renderProductManageList() {
+            const list = document.getElementById('productManageList');
+            if (!list) return;
+            if (products.length === 0) { list.innerHTML = '<tr><td colspan="3">暂无商品</td></tr>'; return; }
+            list.innerHTML = products.map(p => `
+                <tr>
+                    <td>${escapeHtml(p.name)}</td>
+                    <td>¥${toMoney(p.price)}</td>
+                    <td>
+                        <button onclick='addToCart(${JSON.stringify(p.id)})' class="btn btn-primary">加入当前订单</button>
+                        <button onclick='deleteProduct(${JSON.stringify(p.id)})' class="btn btn-danger">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteProduct(id) {
+            const product = products.find(p => p.id === String(id));
+            if (!product) return;
+            const existsInCart = cart.some(item => item.type !== DISCOUNT_TYPE && item.id === String(id));
+            if (existsInCart && !confirm('该商品已在当前订单中，删除商品会同时从当前订单移除，是否继续？')) return;
+            products = products.filter(p => p.id !== String(id));
+            cart = cart.filter(item => item.type === DISCOUNT_TYPE || item.id !== String(id));
+            saveData(); renderProducts(); renderCart(); renderProductManageList();
+            showMessage(`商品“${product.name}”已删除`, 'success');
+        }
+
+        function addToCart(productId) {
+            const id = String(productId);
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            const existing = cart.find(item => item.type !== DISCOUNT_TYPE && item.id === id);
+            if (existing) existing.quantity = normalizeQuantity(existing.quantity + 1);
+            else cart.push({...product, type: 'product', quantity: 1});
+            saveData(); renderCart();
+            showMessage(`“${product.name}”已加入当前订单`, 'success');
+        }
+
+        function focusCustomDiscount() { document.getElementById('discountAmount').focus(); }
+        function addQuickDiscount(amount) {
+            document.getElementById('discountAmount').value = amount;
+            document.getElementById('discountReason').value = `快捷减免${amount}元`;
+            addDiscount();
+        }
+
+        function addDiscount() {
+            if (getProductItems().length === 0) return showMessage('请先添加商品，再添加优惠', 'error');
+            const amount = Number(document.getElementById('discountAmount').value);
+            const reason = document.getElementById('discountReason').value.trim();
+            if (!Number.isFinite(amount) || amount <= 0) return showMessage('请输入大于 0 的优惠金额', 'error');
+            const currentTotalBeforeDiscount = getProductItems().reduce((sum, item) => sum + Number(item.price) * Number(item.quantity || 1), 0);
+            const currentDiscount = calculateDiscount();
+            if (amount + currentDiscount > currentTotalBeforeDiscount) return showMessage('优惠金额不能超过商品原价合计', 'error');
+            const name = reason ? `优惠减免：${reason}` : '优惠减免';
+            cart.push({ id: createId('disc'), type: DISCOUNT_TYPE, name, reason, amount: amount.toFixed(2), price: (-amount).toFixed(2), quantity: 1 });
+            document.getElementById('discountAmount').value = ''; document.getElementById('discountReason').value = '';
+            saveData(); renderCart(); showMessage(`已添加优惠 ${amount.toFixed(2)} 元`, 'success');
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            const empty = document.getElementById('emptyCart');
+            const totalAmount = Math.max(calculateCartTotal(), 0);
+            const discount = calculateDiscount();
+            let totalItems = 0;
+            if (cart.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; }
+            else {
+                empty.style.display = 'none';
+                list.innerHTML = cart.map(item => {
+                    const subtotal = Number(item.price) * Number(item.quantity || 1);
+                    if (item.type !== DISCOUNT_TYPE) totalItems += Number(item.quantity || 1);
+                    if (item.type === DISCOUNT_TYPE) {
+                        return `
+                            <div class="cart-row discount-item">
+                                <div><div class="cart-title">${escapeHtml(item.name)}</div><div class="cart-meta">优惠项目</div></div>
+                                <div><div class="cart-amount">-${toMoney(Math.abs(subtotal))}</div><div class="cart-actions"><button onclick='removeFromCart(${JSON.stringify(item.id)})' class="mini-danger">删</button></div></div>
+                            </div>`;
+                    }
+                    return `
+                        <div class="cart-row">
+                            <div><div class="cart-title">${escapeHtml(item.name)}</div><div class="cart-meta">¥${toMoney(item.price)} × ${escapeHtml(item.quantity)}</div></div>
+                            <div>
+                                <div class="cart-amount">¥${toMoney(subtotal)}</div>
+                                <div class="cart-actions">
+                                    <button class="qty-btn" onclick='updateQuantity(${JSON.stringify(item.id)}, -1)'>-</button>
+                                    <input class="qty-input" type="number" value="${escapeHtml(item.quantity)}" min="1" max="${MAX_QUANTITY}" step="1" inputmode="numeric" onchange='updateQuantity(${JSON.stringify(item.id)}, 0, this.value)'>
+                                    <button class="qty-btn" onclick='updateQuantity(${JSON.stringify(item.id)}, 1)'>+</button>
+                                    <button onclick='removeFromCart(${JSON.stringify(item.id)})' class="mini-danger">删</button>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+            }
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('discountTotal').textContent = `¥${discount.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `¥${totalAmount.toFixed(2)}`;
+            calculateChange();
+        }
+
+        function updateQuantity(id, change, newValue = null) {
+            const item = cart.find(item => item.id === String(id));
+            if (!item || item.type === DISCOUNT_TYPE) return;
+            if (newValue !== null) item.quantity = normalizeQuantity(newValue);
+            else item.quantity = normalizeQuantity(Number(item.quantity || 1) + Number(change || 0));
+            saveData(); renderCart();
+        }
+
+        function removeFromCart(id) { cart = cart.filter(item => item.id !== String(id)); saveData(); renderCart(); }
+
+        function clearCart() {
+            if (cart.length === 0 || !confirm('确定清空当前订单吗？')) return;
+            cart = []; saveData(); renderCart(); resetPaymentSelection(); document.getElementById('orderRemarks').value = ''; showMessage('当前订单已清空', 'success');
+        }
+
+        function resetPaymentSelection() {
+            selectedPayment = null;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('cashInput').style.display = 'none';
+            document.getElementById('changeDisplay').style.display = 'none';
+            document.getElementById('qrCodeDisplay').style.display = 'none';
+            document.getElementById('cashReceived').value = '';
+        }
+
+        function selectPayment(method, element) {
+            const qrDisplay = document.getElementById('qrCodeDisplay');
+            const cashInput = document.getElementById('cashInput');
+            const changeDisplay = document.getElementById('changeDisplay');
+            if (method !== 'cash' && !paymentSettings[method]) {
+                resetPaymentSelection();
+                return showMessage(`检测到您尚未上传${method === 'wechat' ? '微信' : '支付宝'}收款码，请先在系统设置中上传`, 'warning');
+            }
+            selectedPayment = method;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            if (element) element.classList.add('selected');
+            if (method === 'cash') { cashInput.style.display = 'grid'; qrDisplay.style.display = 'none'; calculateChange(); }
+            else {
+                cashInput.style.display = 'none'; changeDisplay.style.display = 'none';
+                document.getElementById('checkoutQrImage').src = paymentSettings[method];
+                document.getElementById('checkoutQrText').textContent = method === 'wechat' ? '微信支付' : '支付宝支付';
+                qrDisplay.style.display = 'block';
+            }
+        }
+
+        function calculateChange() {
+            if (selectedPayment !== 'cash') return;
+            const total = Math.max(calculateCartTotal(), 0);
+            const cash = Number(document.getElementById('cashReceived').value) || 0;
+            if (cash >= total) { document.getElementById('changeAmount').textContent = (cash - total).toFixed(2); document.getElementById('changeDisplay').style.display = 'block'; }
+            else document.getElementById('changeDisplay').style.display = 'none';
+        }
+
+        function completePayment() {
+            if (!selectedPayment) return showMessage('请选择支付方式', 'error');
+            if (getProductItems().length === 0) return showMessage('当前订单没有商品，不能收款', 'error');
+            const total = Math.max(calculateCartTotal(), 0);
+            const discount = calculateDiscount();
+            let cashReceived = 0, change = 0;
+            if (selectedPayment === 'cash') {
+                cashReceived = Number(document.getElementById('cashReceived').value) || 0;
+                if (cashReceived < total) return showMessage(`实收金额不足，还需 ${(total - cashReceived).toFixed(2)} 元`, 'error');
+                change = cashReceived - total;
+            } else cashReceived = total;
+            const remarks = document.getElementById('orderRemarks').value.trim();
+            const orderNumber = orderCounter++;
+            const transactionId = createId('txn');
+            const now = new Date();
+            const transaction = { id: transactionId, orderNumber, time: now.toLocaleString(), method: selectedPayment, total: total.toFixed(2), discount: discount.toFixed(2), cash: cashReceived.toFixed(2), change: change.toFixed(2), items: cart.map(item => ({...item})), remarks };
+            ledger.unshift(transaction);
+            kitchenOrders.unshift({ id: transactionId, orderNumber, time: transaction.time, createdAt: now.getTime(), items: getProductItems().map(item => ({name: item.name, quantity: item.quantity})), completed: false, remarks });
+            cart = []; saveData(); renderCart(); renderLedger(); updateTodayStats(); updateKitchenDisplay(); resetPaymentSelection(); document.getElementById('orderRemarks').value = '';
+            showMessage(`收款成功！订单号: ${orderNumber}`, 'success');
+        }
+
+        function renderLedger() {
+            const list = document.getElementById('ledgerList');
+            const empty = document.getElementById('emptyLedger');
+            if (ledger.length === 0) {
+                list.innerHTML = ''; empty.style.display = 'block'; document.getElementById('totalTransactions').textContent = '0'; document.getElementById('totalRevenue').textContent = '0.00'; updateTodayStats(); return;
+            }
+            empty.style.display = 'none';
+            const totalRevenue = ledger.reduce((sum, t) => sum + (Number(t.total) || 0), 0);
+            document.getElementById('totalTransactions').textContent = ledger.length;
+            document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2);
+            list.innerHTML = ledger.map(t => `
+                <tr><td>${escapeHtml(t.orderNumber || '-')}</td><td>${escapeHtml(t.time)}</td><td>${escapeHtml(PAYMENT_NAMES[t.method] || t.method)}</td><td>${toMoney(t.total)}</td><td>${Number(t.discount) > 0 ? toMoney(t.discount) : '-'}</td><td>${t.method === 'cash' ? toMoney(t.cash) : '-'}</td><td>${t.method === 'cash' ? toMoney(t.change) : '-'}</td><td>${escapeHtml(t.remarks || '-')}</td></tr>
+            `).join('');
+            updateTodayStats();
+        }
+
+        function openKitchenDisplay() {
+            if (kitchenWindow && !kitchenWindow.closed) { kitchenWindow.focus(); return; }
+            kitchenWindow = window.open('', '后厨显示', 'width=1180,height=820,left=100,top=100');
+            if (!kitchenWindow) return showMessage('请允许弹出窗口以显示后厨界面', 'error');
+            kitchenWindow.document.write(`
+                <!DOCTYPE html><html><head><meta charset="UTF-8"><title>后厨订单</title>
+                <style>
+                    * { margin:0; padding:0; box-sizing:border-box; font-family: Arial, "Microsoft YaHei", sans-serif; }
+                    body { background:#0f172a; color:white; padding:18px; min-height:100vh; }
+                    .kitchen-header { height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,.14); padding-bottom:14px; }
+                    .kitchen-header h1 { font-size:32px; }
+                    .kitchen-stats { display:flex; gap:18px; align-items:center; font-size:20px; color:#cbd5e1; }
+                    .kitchen-stats strong { color:white; font-size:28px; }
+                    .refresh-btn { min-height:52px; padding:0 20px; border:0; border-radius:14px; background:#2563eb; color:white; font-size:18px; font-weight:900; cursor:pointer; }
+                    .orders-section-title { font-size:22px; margin:10px 0 12px; color:#e5e7eb; }
+                    .orders-container { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px; align-items:start; }
+                    .order-card { background:#1e293b; border:3px solid #334155; border-left-width:10px; border-left-color:#38bdf8; border-radius:18px; padding:18px; min-height:240px; display:flex; flex-direction:column; box-shadow:0 12px 28px rgba(0,0,0,.22); }
+                    .order-card.warn { border-left-color:#f59e0b; }
+                    .order-card.danger { border-left-color:#ef4444; }
+                    .order-header { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom:14px; }
+                    .order-number { font-size:30px; font-weight:1000; }
+                    .order-time { color:#cbd5e1; font-size:18px; text-align:right; }
+                    .order-items { flex:1; }
+                    .order-item { display:flex; justify-content:space-between; gap:12px; padding:10px 12px; margin:8px 0; background:rgba(255,255,255,.08); border-radius:12px; font-size:24px; font-weight:800; }
+                    .order-item span:last-child { font-size:28px; color:#fef08a; }
+                    .order-remarks { background:#fde68a; color:#111827; padding:12px; border-radius:12px; margin:12px 0; font-size:22px; font-weight:1000; }
+                    .complete-btn { width:100%; min-height:58px; border:0; border-radius:14px; background:#22c55e; color:white; font-size:24px; font-weight:1000; cursor:pointer; margin-top:12px; }
+                    .empty-state { text-align:center; padding:80px 20px; color:#cbd5e1; font-size:30px; }
+                    .completed-summary { margin-top:22px; color:#94a3b8; font-size:18px; }
+                </style></head><body>
+                    <div class="kitchen-header">
+                        <h1>后厨订单</h1>
+                        <div class="kitchen-stats"><span>待完成 <strong id="pendingCount">0</strong></span><span>已完成 <strong id="completedCount">0</strong></span></div>
+                        <button onclick="refreshOrders()" class="refresh-btn">刷新</button>
+                    </div>
+                    <div class="orders-section-title">待制作订单（按先来先做排序）</div>
+                    <div id="ordersContainer" class="orders-container"></div>
+                    <div id="completedSummary" class="completed-summary"></div>
+                    <script>
+                        function escapeHtml(value) { return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+                        function getOrders() { try { return JSON.parse(localStorage.getItem('kitchenOrders')) || []; } catch { return []; } }
+                        function waitClass(order) { const age = Date.now() - Number(order.createdAt || Date.now()); if (age > 8*60*1000) return 'danger'; if (age > 3*60*1000) return 'warn'; return ''; }
+                        function shortTime(t) { const s = String(t || ''); const parts = s.split(' '); return parts.length > 1 ? parts.slice(-1)[0] : s; }
+                        function renderOrders() {
+                            const allOrders = getOrders();
+                            const pending = allOrders.filter(o => !o.completed).sort((a,b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+                            const completed = allOrders.filter(o => o.completed);
+                            document.getElementById('pendingCount').textContent = pending.length;
+                            document.getElementById('completedCount').textContent = completed.length;
+                            document.getElementById('completedSummary').textContent = completed.length ? '已完成订单会自动归档，不干扰待制作列表。' : '';
+                            const container = document.getElementById('ordersContainer');
+                            if (pending.length === 0) { container.innerHTML = '<div class="empty-state">暂无待制作订单</div>'; return; }
+                            container.innerHTML = pending.map(order => \`
+                                <div class="order-card \${waitClass(order)}">
+                                    <div class="order-header"><div class="order-number">#\${escapeHtml(order.orderNumber || String(order.id).slice(-4))}</div><div class="order-time">\${escapeHtml(shortTime(order.time))}</div></div>
+                                    <div class="order-items">
+                                        \${(order.items || []).map(item => \`<div class="order-item"><span>\${escapeHtml(item.name)}</span><span>× \${escapeHtml(item.quantity)}</span></div>\`).join('')}
+                                    </div>
+                                    \${order.remarks ? \`<div class="order-remarks">备注：\${escapeHtml(order.remarks)}</div>\` : ''}
+                                    <button onclick="completeOrder('\${escapeHtml(order.id)}')" class="complete-btn">完成订单</button>
+                                </div>
+                            \`).join('');
+                        }
+                        function completeOrder(orderId) {
+                            if (window.opener && !window.opener.closed) window.opener.postMessage({ type: 'orderCompleted', orderId: orderId }, window.location.origin);
+                            let orders = getOrders();
+                            const idx = orders.findIndex(o => String(o.id) === String(orderId));
+                            if (idx !== -1) { orders[idx].completed = true; localStorage.setItem('kitchenOrders', JSON.stringify(orders)); renderOrders(); }
+                        }
+                        function refreshOrders() { renderOrders(); }
+                        window.addEventListener('message', event => { if (event.source !== window.opener) return; if (event.data && event.data.type === 'updateKitchen') renderOrders(); });
+                        renderOrders(); setInterval(refreshOrders, 10000);
+                    <\/script>
+                </body></html>`);
+            kitchenWindow.document.close();
+        }
+
+        function completeKitchenOrder(orderId) {
+            const orderIndex = kitchenOrders.findIndex(o => String(o.id) === String(orderId));
+            if (orderIndex !== -1) {
+                kitchenOrders[orderIndex].completed = true; saveData(); updateKitchenDisplay();
+                showMessage(`订单 #${kitchenOrders[orderIndex].orderNumber || String(orderId).slice(-4)} 已完成`, 'success');
+            }
+        }
+
+        function updateKitchenDisplay() { if (kitchenWindow && !kitchenWindow.closed) kitchenWindow.postMessage({type: 'updateKitchen'}, window.location.origin); }
+
+        function exportData() {
+            const data = { products, cart, ledger, kitchenOrders, orderCounter, paymentSettings, version: '3.5' };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob); const a = document.createElement('a');
+            a.href = url; a.download = `收银数据_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(url);
+            showMessage('数据导出成功', 'success');
+        }
+
+        function validateImportData(data) {
+            if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('导入文件不是有效的数据对象');
+            ['products', 'cart', 'ledger', 'kitchenOrders'].forEach(key => { if (data[key] !== undefined && !Array.isArray(data[key])) throw new Error(`${key} 必须是数组`); });
+            if (data.orderCounter !== undefined && !Number.isFinite(Number(data.orderCounter))) throw new Error('orderCounter 必须是数字');
+            if (data.paymentSettings !== undefined && (typeof data.paymentSettings !== 'object' || Array.isArray(data.paymentSettings))) throw new Error('paymentSettings 格式不正确');
+            return true;
+        }
+
+        function importData() {
+            const input = document.createElement('input'); input.type = 'file'; input.accept = '.json,application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result); validateImportData(data);
+                        const importPayment = Boolean(data.paymentSettings) && confirm('导入文件中包含收款码设置，是否同时覆盖当前微信/支付宝收款码？\n选择“取消”则只导入业务数据，保留当前收款码。');
+                        if (confirm('导入数据将覆盖当前商品、购物车、交易记录和后厨订单，确定继续吗？')) {
+                            products = Array.isArray(data.products) ? data.products.map(normalizeProduct).filter(p => Number(p.price) > 0) : [];
+                            cart = Array.isArray(data.cart) ? data.cart.map(normalizeCartItem).filter(item => Number(item.price) !== 0) : [];
+                            ledger = Array.isArray(data.ledger) ? data.ledger.map(normalizeTransaction) : [];
+                            kitchenOrders = Array.isArray(data.kitchenOrders) ? data.kitchenOrders.map(normalizeKitchenOrder) : [];
+                            orderCounter = Number.isFinite(Number(data.orderCounter)) ? Number(data.orderCounter) : 1000;
+                            if (importPayment) paymentSettings = normalizePaymentSettings(data.paymentSettings);
+                            saveData(); renderProducts(); renderCart(); renderLedger(); renderSettings(); renderProductManageList(); updatePaymentButtons(); updateKitchenDisplay(); showMessage('数据导入成功', 'success');
+                        }
+                    } catch (error) { showMessage(`导入失败：${error.message || '文件格式不正确'}`, 'error'); }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function clearAllData() {
+            if (!confirm('这将清除所有商品、购物车、交易记录和后厨订单（收款码保留），确定继续吗？')) return;
+            products = []; cart = []; ledger = []; kitchenOrders = []; orderCounter = 1000;
+            saveData(); renderProducts(); renderCart(); renderLedger(); renderProductManageList(); updateKitchenDisplay(); resetPaymentSelection(); showMessage('业务数据已清除', 'success');
+        }
+
+        function showMessage(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? '#16a34a' : type === 'warning' ? '#f59e0b' : '#dc2626';
+            notification.style.display = 'block';
+            clearTimeout(notification.hideTimer);
+            notification.hideTimer = setTimeout(() => { notification.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>
