@@ -5,31 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Josh 的工具箱</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; background: #f5f5f7; color: #1d1d1f; display: flex; flex-direction: column; align-items: center; padding: 40px; }
-        h1 { font-weight: 600; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; width: 100%; max-width: 600px; margin-top: 30px; }
-        .card { background: white; padding: 20px; border-radius: 12px; text-decoration: none; color: inherit; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .card:hover { transform: translateY(-5px); background: #0071e3; color: white; }
+        * { box-sizing: border-box; }
+        :root {
+            --bg: #f5f5f7;
+            --card: #ffffff;
+            --text: #1d1d1f;
+            --muted: #6e6e73;
+            --line: #e8e8ed;
+            --blue: #0071e3;
+            --shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 28px 16px 42px;
+        }
+        .page {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 22px;
+        }
+        h1 {
+            margin: 0;
+            font-size: clamp(30px, 7vw, 46px);
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+        }
+        .section-title {
+            margin: 24px 0 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .tool-list {
+            display: grid;
+            gap: 10px;
+        }
+        .tool-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+            min-height: 72px;
+            padding: 15px 16px;
+            border-radius: 16px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            box-shadow: 0 3px 14px rgba(0,0,0,0.035);
+            color: inherit;
+            text-decoration: none;
+            transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+        }
+        .tool-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: rgba(0,113,227,0.22);
+        }
+        .tool-name {
+            font-size: 17px;
+            font-weight: 750;
+            margin-bottom: 4px;
+        }
+        .tool-desc {
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--muted);
+        }
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 52px;
+            padding: 5px 8px;
+            border-radius: 999px;
+            background: #f0f7ff;
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .arrow {
+            color: #a1a1a6;
+            font-size: 20px;
+            margin-left: 4px;
+        }
+        .right-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        footer {
+            margin-top: 28px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+        }
+        @media (max-width: 520px) {
+            body { padding-top: 22px; }
+            .tool-item { grid-template-columns: 1fr; gap: 10px; min-height: auto; }
+            .right-meta { justify-content: space-between; }
+            .tool-name { font-size: 16px; }
+        }
     </style>
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-    <h1>Josh's Toolbox</h1>
-    <p>自研 HTML 小工具汇总</p>
+    <main class="page">
+        <header>
+            <h1>Josh's Toolbox</h1>
+        </header>
 
-    <div class="grid">
-        <a href="EngWrdSqrV2.html" class="card">英语单词矩阵检测</a>
-        <a href="JustLookX.html" class="card">干瞪眼计分器X</a>
-        <a href="JustLookX_v2_compact_keypad_selectfix.html" class="card">干瞪眼计分器X_beta</a>
-        <a href="CashierV3.3.html" class="card">收银记账系统v3.3</a>
-        <a href="CashierV3.5_layout.html" class="card">收银记账系统v3.5最新版</a>
-        <a href="61game_1_v1.1.html" class="card">六一小游戏1</a>
-        <a href="61game_2_v1.html" class="card">六一小游戏2</a>
-        <a href="TypingExerciser.html" class="card">打字练习小游戏</a>
-        <a href="https://legalseas.com/792.html" target="_blank" class="card">常用网站合集</a>
-        <a href="https://github.com" target="_blank" class="card">GitHub</a>
-        <a href="https://efzzz.pro" target="_blank" class="card">校园论坛</a>
-    </div>
+        <div class="section-title">Tools</div>
+        <nav class="tool-list" aria-label="工具列表">
+            <a href="JustLookX_v2_compact_keypad_selectfix.html" class="tool-item">
+                <div><div class="tool-name">干瞪眼计分器 X</div><div class="tool-desc">适合手机现场计分，支持流水、战绩分享和专用小键盘。</div></div>
+                <div class="right-meta"><span class="tag">计分</span><span class="arrow">›</span></div>
+            </a>
+            <a href="JustLookX.html" class="tool-item">
+                <div><div class="tool-name">干瞪眼计分器 X 旧版</div><div class="tool-desc">基础版干瞪眼计分器。</div></div>
+                <div class="right-meta"><span class="tag">计分</span><span class="arrow">›</span></div>
+            </a>
+            <a href="CashierV3.5_layout.html" class="tool-item">
+                <div><div class="tool-name">收银记账系统 v3.5</div><div class="tool-desc">用于商品录入、收银和账目统计。</div></div>
+                <div class="right-meta"><span class="tag">记账</span><span class="arrow">›</span></div>
+            </a>
+            <a href="CashierV3.3.html" class="tool-item">
+                <div><div class="tool-name">收银记账系统 v3.3</div><div class="tool-desc">旧版收银记账工具。</div></div>
+                <div class="right-meta"><span class="tag">记账</span><span class="arrow">›</span></div>
+            </a>
+            <a href="EngWrdSqrV2.html" class="tool-item">
+                <div><div class="tool-name">英语单词矩阵检测</div><div class="tool-desc">检查英语单词矩阵内容，辅助课堂或练习使用。</div></div>
+                <div class="right-meta"><span class="tag">英语</span><span class="arrow">›</span></div>
+            </a>
+            <a href="TypingExerciser.html" class="tool-item">
+                <div><div class="tool-name">打字学习小助手</div><div class="tool-desc">用于键盘输入和打字练习。</div></div>
+                <div class="right-meta"><span class="tag">练习</span><span class="arrow">›</span></div>
+            </a>
+            <a href="61game_1_v1.1.html" class="tool-item">
+                <div><div class="tool-name">六一快乐糖果雨</div><div class="tool-desc">六一主题互动小游戏。</div></div>
+                <div class="right-meta"><span class="tag">游戏</span><span class="arrow">›</span></div>
+            </a>
+            <a href="61game_2_v1.html" class="tool-item">
+                <div><div class="tool-name">六一知识小火箭</div><div class="tool-desc">六一主题知识互动小游戏。</div></div>
+                <div class="right-meta"><span class="tag">游戏</span><span class="arrow">›</span></div>
+            </a>
+        </nav>
+
+        <div class="section-title">Links</div>
+        <nav class="tool-list" aria-label="常用链接">
+            <a href="https://legalseas.com/792.html" target="_blank" rel="noopener" class="tool-item">
+                <div><div class="tool-name">常用网站合集</div><div class="tool-desc">外部网站链接。</div></div>
+                <div class="right-meta"><span class="tag">链接</span><span class="arrow">↗</span></div>
+            </a>
+            <a href="https://github.com" target="_blank" rel="noopener" class="tool-item">
+                <div><div class="tool-name">GitHub</div><div class="tool-desc">代码仓库和 Pages 管理入口。</div></div>
+                <div class="right-meta"><span class="tag">链接</span><span class="arrow">↗</span></div>
+            </a>
+            <a href="https://efzzz.pro" target="_blank" rel="noopener" class="tool-item">
+                <div><div class="tool-name">校园论坛</div><div class="tool-desc">外部论坛入口。</div></div>
+                <div class="right-meta"><span class="tag">链接</span><span class="arrow">↗</span></div>
+            </a>
+        </nav>
+
+        <footer>Hosted on GitHub Pages</footer>
+    </main>
+
     <script>
         if (window.netlifyIdentity) {
             window.netlifyIdentity.on("init", user => {
