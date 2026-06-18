@@ -194,8 +194,8 @@
 
         <div class="section-title">Contact</div>
         <button type="button" class="contact-button" id="showContactBtn">
-            <div><div class="tool-name">联系我</div><div class="tool-desc">输入口令后，快速显示微信二维码。</div></div>
-            <div class="right-meta"><span class="tag">口令</span><span class="arrow">›</span></div>
+            <div><div class="tool-name">Contact</div><div class="tool-desc">输入口令。</div></div>
+            <div class="right-meta"><span class="tag">验证</span><span class="arrow">›</span></div>
         </button>
 
         <div class="section-title">Tools</div>
@@ -275,7 +275,7 @@
             });
         }
 
-        const CONTACT_PASSWORD = "K2p0t1i0&Z0h3a2n5g";
+        const CONTACT_PASSWORD = "267035179";
         const showContactBtn = document.getElementById("showContactBtn");
         const contactModal = document.getElementById("contactModal");
         const closeContactBtn = document.getElementById("closeContactBtn");
@@ -289,12 +289,12 @@
         }
 
         showContactBtn.addEventListener("click", () => {
-            const input = window.prompt("请输入联系口令：");
+            const input = window.prompt("口令：");
             if (input === null) return;
             if (input === CONTACT_PASSWORD) {
                 openContactModal();
             } else {
-                window.alert("口令不正确，请重新输入。");
+                window.alert("口令不正确。");
             }
         });
 
