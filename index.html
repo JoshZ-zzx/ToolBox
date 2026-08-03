@@ -108,30 +108,28 @@
             text-align: center;
         }
 
-        .contact-button {
-            width: 100%;
-            min-height: 64px;
-            padding: 15px 16px;
+        .secret-contact-trigger {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 50;
+            width: 48px;
+            height: 48px;
+            width: calc(48px + env(safe-area-inset-right, 0px));
+            height: calc(48px + env(safe-area-inset-top, 0px));
+            margin: 0;
+            padding: 0;
             border: 0;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #0071e3, #6b5cff);
-            color: #fff;
-            box-shadow: 0 8px 24px rgba(0,113,227,0.18);
-            font: inherit;
-            cursor: pointer;
-            text-align: left;
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            align-items: center;
-            transition: transform .16s ease, box-shadow .16s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            opacity: 0;
+            cursor: default;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        .contact-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0,113,227,0.24);
-        }
-        .contact-button .tool-desc { color: rgba(255,255,255,0.78); }
-        .contact-button .tag { background: rgba(255,255,255,0.18); color: #fff; }
         .contact-modal[hidden] { display: none; }
         .contact-modal {
             position: fixed;
@@ -186,17 +184,18 @@
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+    <button
+        type="button"
+        class="secret-contact-trigger"
+        id="secretContactTrigger"
+        tabindex="-1"
+        aria-hidden="true"
+    ></button>
+
     <main class="page">
         <header>
             <h1>Josh's Toolbox</h1>
         </header>
-
-
-        <div class="section-title">Contact</div>
-        <button type="button" class="contact-button" id="showContactBtn">
-            <div><div class="tool-name">Contact</div><div class="tool-desc">输入口令。</div></div>
-            <div class="right-meta"><span class="tag">验证</span><span class="arrow">›</span></div>
-        </button>
 
         <div class="section-title">Tools</div>
         <nav class="tool-list" aria-label="工具列表">
@@ -276,9 +275,12 @@
         }
 
         const CONTACT_PASSWORD = "267035179";
-        const showContactBtn = document.getElementById("showContactBtn");
+        const SECRET_TAP_TARGET = 5;
+        const SECRET_TAP_WINDOW_MS = 2200;
+        const secretContactTrigger = document.getElementById("secretContactTrigger");
         const contactModal = document.getElementById("contactModal");
         const closeContactBtn = document.getElementById("closeContactBtn");
+        let secretTapTimes = [];
 
         function openContactModal() {
             contactModal.hidden = false;
@@ -288,7 +290,7 @@
             contactModal.hidden = true;
         }
 
-        showContactBtn.addEventListener("click", () => {
+        function requestContactAccess() {
             const input = window.prompt("口令：");
             if (input === null) return;
             if (input === CONTACT_PASSWORD) {
@@ -296,6 +298,27 @@
             } else {
                 window.alert("口令不正确。");
             }
+        }
+
+        function registerSecretTap(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const now = Date.now();
+            secretTapTimes = secretTapTimes.filter(
+                tapTime => now - tapTime <= SECRET_TAP_WINDOW_MS
+            );
+            secretTapTimes.push(now);
+
+            if (secretTapTimes.length >= SECRET_TAP_TARGET) {
+                secretTapTimes = [];
+                requestContactAccess();
+            }
+        }
+
+        secretContactTrigger.addEventListener("click", registerSecretTap);
+        secretContactTrigger.addEventListener("dblclick", event => {
+            event.preventDefault();
         });
 
         closeContactBtn.addEventListener("click", closeContactModal);
