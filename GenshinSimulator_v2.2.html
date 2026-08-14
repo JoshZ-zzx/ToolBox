@@ -1,0 +1,6653 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#eaf7f7">
+  <meta name="description" content="单文件原神角色活动祈愿模拟器，支持大小保底、捕获明光、资源回收、多轮出金预测和祈愿统计。">
+  <title>原神祈愿模拟器</title>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #102f3d;
+      --muted: #6d9097;
+      --theme-primary: #268da0;
+      --theme-accent: #48c6d2;
+      --theme-deep: #155c74;
+      --theme-soft: #e2f5f3;
+      --theme-pale: #f3fbfa;
+      --theme-rgb: 38, 141, 160;
+      --line: rgba(var(--theme-rgb), .22);
+      --blue: var(--theme-primary);
+      --cyan: var(--theme-accent);
+      --gold: #d7a84c;
+      --paper: #f7fbfa;
+      --shadow:
+        0 18px 60px rgba(var(--theme-rgb), .14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--theme-soft);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--theme-soft);
+      color: var(--ink);
+      font-family:
+        "Noto Sans SC",
+        "Microsoft YaHei",
+        "PingFang SC",
+        system-ui,
+        sans-serif;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    a:focus-visible {
+      outline:
+        3px solid rgba(var(--theme-rgb), .28);
+      outline-offset: 2px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .wish-page {
+      min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+      padding: 22px clamp(16px, 4vw, 58px) 34px;
+      background:
+        radial-gradient(
+          circle at 95% 5%,
+          rgba(var(--theme-rgb), .2),
+          transparent 34%
+        ),
+        radial-gradient(
+          circle at 5% 95%,
+          rgba(var(--theme-rgb), .13),
+          transparent 32%
+        ),
+        linear-gradient(
+          145deg,
+          #fbfffe 0%,
+          var(--theme-pale) 52%,
+          var(--theme-soft) 100%
+        );
+      transition: background .35s ease;
+    }
+
+    .wish-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .28;
+      background-image:
+        radial-gradient(#fff 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image:
+        linear-gradient(to bottom, black, transparent 78%);
+    }
+
+    .aurora {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(22px);
+      pointer-events: none;
+    }
+
+    .aurora.one {
+      width: 48vw;
+      height: 48vw;
+      right: -13vw;
+      top: -14vw;
+      background:
+        radial-gradient(
+          circle,
+          rgba(var(--theme-rgb), .24),
+          transparent 68%
+        );
+    }
+
+    .aurora.two {
+      width: 34vw;
+      height: 34vw;
+      left: -11vw;
+      bottom: -10vw;
+      background:
+        radial-gradient(
+          circle,
+          rgba(var(--theme-rgb), .16),
+          transparent 70%
+        );
+    }
+
+    .topbar {
+      min-height: 54px;
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .top-left {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .home-button {
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 13px;
+      border: 1px solid #b9d9dc;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .72);
+      color: #426d78;
+      box-shadow:
+        0 6px 18px rgba(54, 112, 128, .08);
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+      transition:
+        transform .18s ease,
+        background .18s ease;
+    }
+
+    .home-button:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: .08em;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border: 1px solid var(--theme-accent);
+      border-radius: 50%;
+      color: var(--theme-primary);
+      box-shadow:
+        inset 0 0 0 5px rgba(255, 255, 255, .55);
+    }
+
+    .brand b {
+      display: block;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 18px;
+    }
+
+    .brand small {
+      display: block;
+      margin-top: 2px;
+      color: #68909b;
+      font-size: 8px;
+      letter-spacing: .2em;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-button {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #b9d9dc;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .72);
+      color: #426d78;
+      font-size: 17px;
+      box-shadow:
+        0 6px 18px rgba(54, 112, 128, .08);
+      transition:
+        transform .18s ease,
+        background .18s ease;
+    }
+
+    .icon-button:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .mode-tabs {
+      width: min(620px, 100%);
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin: 12px auto 0;
+      padding: 5px;
+      border:
+        1px solid rgba(var(--theme-rgb), .18);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, .6);
+      box-shadow:
+        0 9px 28px rgba(var(--theme-rgb), .08);
+      backdrop-filter: blur(14px);
+    }
+
+    .mode-tab {
+      min-height: 40px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #65848a;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      transition:
+        background .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
+    }
+
+    .mode-tab[aria-selected="true"] {
+      background:
+        linear-gradient(
+          135deg,
+          var(--theme-primary),
+          var(--theme-deep)
+        );
+      color: #fff;
+      box-shadow:
+        0 7px 20px rgba(var(--theme-rgb), .22);
+    }
+
+    .main-view {
+      position: relative;
+      z-index: 2;
+      animation: view-in .25s ease;
+    }
+
+    @keyframes view-in {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+    }
+
+    .hero {
+      max-width: 1120px;
+      position: relative;
+      z-index: 2;
+      margin: 8px auto 0;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: #548994;
+      font-size: 11px;
+      letter-spacing: .24em;
+    }
+
+    .eyebrow span {
+      width: 45px;
+      height: 1px;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          #66aab4
+        );
+    }
+
+    .eyebrow span:last-child {
+      transform: scaleX(-1);
+    }
+
+    h1 {
+      margin: 7px 0 2px;
+      color: #133b49;
+      font:
+        500 clamp(34px, 5vw, 58px) / 1.1
+        Georgia,
+        "Songti SC",
+        serif;
+      letter-spacing: .08em;
+    }
+
+    h1 em {
+      color: var(--theme-primary);
+      font-style: normal;
+      text-shadow:
+        0 5px 24px rgba(var(--theme-rgb), .28);
+    }
+
+    .banner-name {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .12em;
+    }
+
+    .up-card {
+      width: 240px;
+      min-height: 112px;
+      position: relative;
+      margin: 17px auto 13px;
+      padding: 13px 14px 11px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .9);
+      border-radius: 22px;
+      background:
+        linear-gradient(
+          130deg,
+          rgba(255, 255, 255, .82),
+          var(--theme-soft)
+        );
+      box-shadow:
+        0 18px 48px rgba(var(--theme-rgb), .14),
+        inset 0 0 25px #fff;
+    }
+
+    .up-card::before {
+      content: "";
+      width: 130px;
+      height: 130px;
+      position: absolute;
+      left: 55px;
+      top: -38px;
+      background:
+        radial-gradient(
+          circle,
+          #fff 0,
+          rgba(var(--theme-rgb), .18) 40%,
+          transparent 70%
+        );
+    }
+
+    .up-card > * {
+      position: relative;
+    }
+
+    .up-kicker {
+      display: block;
+      color: #ae8436;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .2em;
+    }
+
+    .up-card strong {
+      display: block;
+      margin-top: 3px;
+      font:
+        600 25px
+        Georgia,
+        "Songti SC",
+        serif;
+      letter-spacing: .04em;
+    }
+
+    .five-stars {
+      color: #d8a642;
+      font-size: 12px;
+      letter-spacing: 3px;
+    }
+
+    .up-card small {
+      color: #749198;
+      font-size: 9px;
+    }
+
+    .element-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+      padding: 2px 7px;
+      border:
+        1px solid rgba(var(--theme-rgb), .28);
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .48);
+      color: var(--theme-primary) !important;
+      font-size: 8px !important;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+
+    .stats-panel {
+      max-width: 1040px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .64);
+      box-shadow:
+        0 10px 30px rgba(54, 115, 131, .08);
+      backdrop-filter: blur(14px);
+    }
+
+    .stats-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 12px 8px 16px;
+      border-bottom: 1px solid #d5e6e7;
+      text-align: left;
+    }
+
+    .stats-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .stats-title b {
+      color: #1d5663;
+      font-family: Georgia, "Songti SC", serif;
+      font-size: 16px;
+      letter-spacing: .08em;
+    }
+
+    .stats-title small {
+      color: #86a0a6;
+      font-size: 8px;
+      letter-spacing: .13em;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 1px;
+      background: #d5e6e7;
+    }
+
+    .stats-grid .pity-item {
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .stats-grid .pity-item + .pity-item::before {
+      display: none;
+    }
+
+    .pity-item {
+      min-width: 0;
+      position: relative;
+      padding: 10px 16px;
+      text-align: left;
+    }
+
+    .pity-item + .pity-item::before {
+      content: "";
+      width: 1px;
+      position: absolute;
+      left: 0;
+      top: 12px;
+      bottom: 12px;
+      background: #d5e6e7;
+    }
+
+    .pity-label {
+      display: block;
+      color: #719098;
+      font-size: 9px;
+      letter-spacing: .12em;
+    }
+
+    .pity-value {
+      display: block;
+      overflow: hidden;
+      color: #153f4b;
+      font:
+        600 18px
+        Georgia,
+        "Songti SC",
+        serif;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pity-value.gold {
+      color: #b8872e;
+    }
+
+    .pity-value i {
+      margin-left: 3px;
+      color: #86a0a6;
+      font:
+        normal 10px
+        Arial,
+        sans-serif;
+    }
+
+    .pity-detail {
+      display: block;
+      overflow: hidden;
+      color: #86a0a6;
+      font-size: 8px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .luck-value {
+      color: #8a6124;
+      font-family: "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    progress {
+      width: 100%;
+      height: 3px;
+      display: block;
+      margin-top: 5px;
+      border: 0;
+      accent-color: var(--theme-primary);
+    }
+
+    .result-stage {
+      max-width: 1280px;
+      min-height: 245px;
+      position: relative;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      margin: 17px auto 12px;
+      padding: 14px;
+      border:
+        1px solid rgba(var(--theme-rgb), .22);
+      border-radius: 24px;
+      background:
+        linear-gradient(
+          120deg,
+          rgba(255, 255, 255, .55),
+          rgba(236, 249, 247, .7)
+        );
+      box-shadow:
+        var(--shadow),
+        inset 0 1px #fff;
+      backdrop-filter: blur(12px);
+    }
+
+    .empty {
+      color: #71939a;
+      text-align: center;
+    }
+
+    .empty-symbol {
+      color: #77bec7;
+      font-size: 34px;
+    }
+
+    .empty p {
+      margin: 4px 0;
+      color: #416d76;
+      font:
+        18px
+        Georgia,
+        "Songti SC",
+        serif;
+      letter-spacing: .12em;
+    }
+
+    .empty small {
+      font-size: 10px;
+      letter-spacing: .06em;
+    }
+
+    .result-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns:
+        repeat(10, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .result-grid.single {
+      grid-template-columns:
+        minmax(240px, 360px);
+      justify-content: center;
+    }
+
+    .result-card {
+      min-width: 0;
+      min-height: 184px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: visible;
+      padding: 11px 7px 9px;
+      border: 1px solid #c5dfe2;
+      border-radius: 14px;
+      background: #f8ffff;
+      box-shadow:
+        0 8px 20px rgba(47, 109, 120, .09);
+      cursor: help;
+      color: inherit;
+      font: inherit;
+      text-align: center;
+      touch-action: manipulation;
+      opacity: 0;
+      transform:
+        translateY(12px)
+        scale(.96);
+      animation: reveal .42s ease forwards;
+    }
+
+    .result-card:hover,
+    .result-card:focus-visible,
+    .result-card.is-active {
+      z-index: 10;
+      outline:
+        2px solid rgba(68, 160, 178, .45);
+      outline-offset: 2px;
+      transform: translateY(-2px);
+    }
+
+    .result-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      background:
+        linear-gradient(
+          155deg,
+          transparent 40%,
+          rgba(119, 191, 203, .09)
+        );
+      pointer-events: none;
+    }
+
+    .result-card.rarity-4 {
+      border-color: #c6b6dc;
+      background:
+        linear-gradient(
+          150deg,
+          #fffcff,
+          #e8ddf4
+        );
+    }
+
+    .result-card.rarity-5 {
+      border-color: #edce83;
+      background:
+        linear-gradient(
+          150deg,
+          #fffdf3,
+          #f6dfae
+        );
+      box-shadow:
+        0 10px 28px rgba(204, 150, 53, .28);
+    }
+
+    @keyframes reveal {
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .rarity {
+      position: relative;
+      color: #79a4aa;
+      font-size: 9px;
+      letter-spacing: -1px;
+      white-space: nowrap;
+    }
+
+    .rarity-4 .rarity {
+      color: #9574b8;
+    }
+
+    .rarity-5 .rarity {
+      color: #d39729;
+    }
+
+    .item-icon {
+      width: 43px;
+      height: 43px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      margin: 8px 0;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .48);
+      color: #6fa7b0;
+      font-size: 19px;
+    }
+
+    .rarity-4 .item-icon {
+      color: #9274ac;
+    }
+
+    .rarity-5 .item-icon {
+      color: #be8829;
+    }
+
+    .result-name {
+      position: relative;
+      font-size: 12px;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .result-type {
+      position: relative;
+      margin-top: 3px;
+      color: #759098;
+      font-size: 8px;
+    }
+
+    .mechanism {
+      width: 244px;
+      max-width: calc(100vw - 40px);
+      position: absolute;
+      z-index: 20;
+      left: 50%;
+      bottom: calc(100% + 10px);
+      padding: 11px 12px;
+      border:
+        1px solid rgba(174, 209, 214, .95);
+      border-radius: 12px;
+      background: rgba(250, 255, 254, .97);
+      color: #365e67;
+      box-shadow:
+        0 16px 38px rgba(23, 75, 89, .2);
+      font-size: 11px;
+      line-height: 1.5;
+      text-align: left;
+      opacity: 0;
+      pointer-events: none;
+      transform:
+        translate(-50%, 8px)
+        scale(.97);
+      transform-origin: 50% 100%;
+      transition:
+        opacity .16s ease,
+        transform .16s ease;
+    }
+
+    .mechanism span {
+      display: block;
+      margin-bottom: 4px;
+      color: #27889a;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .16em;
+    }
+
+    .mechanism::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      position: absolute;
+      left: calc(50% - 5px);
+      bottom: -6px;
+      border-right:
+        1px solid rgba(174, 209, 214, .95);
+      border-bottom:
+        1px solid rgba(174, 209, 214, .95);
+      background: #fafffe;
+      transform: rotate(45deg);
+    }
+
+    .result-card:hover .mechanism,
+    .result-card:focus-visible .mechanism,
+    .result-card:focus-within .mechanism,
+    .result-card.is-active .mechanism {
+      opacity: 1;
+      transform:
+        translate(-50%, 0)
+        scale(1);
+    }
+
+    .result-grid:not(.single)
+    .result-card:nth-child(-n+2)
+    .mechanism {
+      left: -4px;
+      transform:
+        translate(0, 8px)
+        scale(.97);
+      transform-origin: 18px 100%;
+    }
+
+    .result-grid:not(.single)
+    .result-card:nth-child(-n+2)
+    .mechanism::after {
+      left: 18px;
+    }
+
+    .result-grid:not(.single)
+    .result-card:nth-child(-n+2):hover
+    .mechanism,
+
+    .result-grid:not(.single)
+    .result-card:nth-child(-n+2):focus-visible
+    .mechanism,
+
+    .result-grid:not(.single)
+    .result-card:nth-child(-n+2):focus-within
+    .mechanism,
+
+    .result-grid:not(.single)
+    .result-card:nth-child(-n+2).is-active
+    .mechanism {
+      transform:
+        translate(0, 0)
+        scale(1);
+    }
+
+    .result-grid:not(.single)
+    .result-card:nth-last-child(-n+2)
+    .mechanism {
+      right: -4px;
+      left: auto;
+      transform:
+        translate(0, 8px)
+        scale(.97);
+      transform-origin:
+        calc(100% - 18px) 100%;
+    }
+
+    .result-grid:not(.single)
+    .result-card:nth-last-child(-n+2)
+    .mechanism::after {
+      right: 18px;
+      left: auto;
+    }
+
+    .result-grid:not(.single)
+    .result-card:nth-last-child(-n+2):hover
+    .mechanism,
+
+    .result-grid:not(.single)
+    .result-card:nth-last-child(-n+2):focus-visible
+    .mechanism,
+
+    .result-grid:not(.single)
+    .result-card:nth-last-child(-n+2):focus-within
+    .mechanism,
+
+    .result-grid:not(.single)
+    .result-card:nth-last-child(-n+2).is-active
+    .mechanism {
+      transform:
+        translate(0, 0)
+        scale(1);
+    }
+
+    .pity-note {
+      position: relative;
+      margin-top: 4px;
+      color: #a37d37;
+      font-size: 8px;
+    }
+
+    .wish-controls {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      justify-content: center;
+      gap: 13px;
+    }
+
+    .wish-button {
+      width: 184px;
+      min-height: 57px;
+      border: 1px solid #a4cfd3;
+      border-radius: 14px;
+      background:
+        linear-gradient(
+          #fff,
+          #ecf8f6
+        );
+      color: #235965;
+      box-shadow:
+        0 10px 28px rgba(45, 114, 128, .12);
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+    }
+
+    .wish-button:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 14px 32px rgba(45, 114, 128, .18);
+    }
+
+    .wish-button:active {
+      transform: translateY(1px);
+    }
+
+    .wish-button:disabled {
+      cursor: wait;
+      opacity: .55;
+    }
+
+    .wish-button strong {
+      display: block;
+      font-size: 14px;
+      letter-spacing: .08em;
+    }
+
+    .wish-button small {
+      color: #7d9ca2;
+      font-size: 9px;
+    }
+
+    .wish-button.ten {
+      border-color: var(--theme-primary);
+      background:
+        linear-gradient(
+          135deg,
+          var(--theme-primary),
+          var(--theme-deep)
+        );
+      color: #fff;
+    }
+
+    .wish-button.ten small {
+      color: #d8f2f2;
+    }
+
+    .rules-link {
+      position: relative;
+      z-index: 3;
+      display: block;
+      margin: 11px auto 0;
+      padding: 5px 10px;
+      border: 0;
+      background: transparent;
+      color: #6f9298;
+      font-size: 9px;
+      letter-spacing: .08em;
+    }
+
+    .rules-link span {
+      color: #2a8a99;
+    }
+
+    .tiny-footer {
+      position: relative;
+      z-index: 2;
+      margin: 10px auto 0;
+      color: #88a3a8;
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(18, 58, 70, .42);
+      backdrop-filter: blur(8px);
+      animation: fade .18s ease;
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+      }
+    }
+
+    .modal {
+      width: min(650px, 100%);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #fff;
+      border-radius: 24px;
+      background: #f9fdfc;
+      box-shadow:
+        0 30px 100px rgba(14, 57, 72, .4);
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid #dcebec;
+    }
+
+    .modal-head span {
+      color: #5e929c;
+      font-size: 9px;
+      letter-spacing: .2em;
+    }
+
+    .modal-head h2 {
+      margin: 2px 0;
+      font:
+        26px
+        Georgia,
+        "Songti SC",
+        serif;
+    }
+
+    .close-button {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #cee1e3;
+      border-radius: 50%;
+      background: #fff;
+      color: #66868c;
+      font-size: 22px;
+    }
+
+    .modal-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      overflow: auto;
+      padding: 18px 22px;
+    }
+
+    .settings-body {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pool-manager {
+      grid-column: 1 / -1;
+      padding: 14px;
+      border:
+        1px solid rgba(var(--theme-rgb), .2);
+      border-radius: 15px;
+      background:
+        linear-gradient(
+          145deg,
+          #fff,
+          var(--theme-pale)
+        );
+    }
+
+    .pool-manager-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .pool-manager-head b {
+      color: #285d67;
+      font-size: 12px;
+    }
+
+    .pool-manager-head small {
+      color: #8ba2a6;
+      font-size: 8px;
+      text-align: right;
+    }
+
+    .pool-manager-grid {
+      display: grid;
+      grid-template-columns:
+        minmax(150px, .9fr)
+        minmax(180px, 1.1fr);
+      gap: 10px;
+    }
+
+    .pool-manager-list {
+      width: 100%;
+      min-height: 168px;
+      padding: 7px;
+      border: 1px solid #c7dee0;
+      border-radius: 10px;
+      background: #fff;
+      color: #244f58;
+      font-size: 10px;
+    }
+
+    .pool-manager-tools {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .pool-manager-tools select,
+    .pool-manager-tools input {
+      width: 100%;
+      min-height: 39px;
+      padding: 8px 9px;
+      border: 1px solid #c7dee0;
+      border-radius: 9px;
+      background: #fff;
+      color: #244f58;
+    }
+
+    .pool-manager-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .pool-manager-actions button {
+      min-height: 37px;
+      padding: 0 8px;
+      border: 1px solid #bdd9dc;
+      border-radius: 9px;
+      background: #fff;
+      color: #49727a;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .pool-manager-actions .add-item {
+      border-color: var(--theme-primary);
+      background: var(--theme-primary);
+      color: #fff;
+    }
+
+    .pool-manager-actions .delete-item {
+      border-color: #e0c5bf;
+      color: #a35b4b;
+    }
+
+    .pool-manager-actions button:last-child {
+      grid-column: 1 / -1;
+    }
+
+    .pool-manager-note {
+      margin: 0;
+      color: #879ea3;
+      font-size: 8px;
+      line-height: 1.6;
+    }
+
+    .field {
+      display: block;
+      min-width: 0;
+    }
+
+    .field > span {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      color: #3c6c76;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .field > span small {
+      color: #94aaae;
+      font-size: 8px;
+      font-weight: 400;
+      text-align: right;
+    }
+
+    .field select {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid #c7dee0;
+      border-radius: 10px;
+      outline: none;
+      background: #fff;
+      color: #244f58;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 40px;
+      padding: 9px 10px;
+      border: 1px solid #c7dee0;
+      border-radius: 10px;
+      outline: none;
+      background: #fff;
+      color: #244f58;
+    }
+
+    .field select[multiple] {
+      height: 142px;
+      font-size: 10px;
+    }
+
+    .field select[multiple] option {
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .triple {
+      display: grid;
+      gap: 6px;
+    }
+
+    .triple select {
+      padding: 7px;
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 22px 20px;
+      border-top: 1px solid #dcebec;
+    }
+
+    .modal-foot button {
+      padding: 10px 17px;
+      border-radius: 10px;
+    }
+
+    .danger-button {
+      margin-right: auto;
+      border: 1px solid #e2c9c3;
+      background: #fff;
+      color: #a35b4b;
+    }
+
+    .secondary-button {
+      border: 1px solid #c7dee0;
+      background: #fff;
+      color: #4a747c;
+    }
+
+    .primary-button {
+      min-width: 110px;
+      border: 1px solid #2b8998;
+      background: #277f90;
+      color: #fff;
+    }
+
+    .rules-modal {
+      width: min(590px, 100%);
+    }
+
+    .prediction-page {
+      width: min(1080px, 100%);
+      margin: 18px auto 0;
+    }
+
+    .prediction-shell {
+      overflow: hidden;
+      border:
+        1px solid rgba(var(--theme-rgb), .22);
+      border-radius: 24px;
+      background: rgba(249, 253, 252, .82);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .prediction-page-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 24px 17px;
+      border-bottom:
+        1px solid rgba(var(--theme-rgb), .15);
+    }
+
+    .prediction-page-head span {
+      color: var(--theme-primary);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .2em;
+    }
+
+    .prediction-page-head h2 {
+      margin: 3px 0 0;
+      color: #183f49;
+      font:
+        28px Georgia,
+        "Songti SC",
+        serif;
+    }
+
+    .prediction-page-head p {
+      max-width: 440px;
+      margin: 0;
+      color: #728e94;
+      font-size: 9px;
+      line-height: 1.65;
+      text-align: right;
+    }
+
+    .prediction-body {
+      min-height: 0;
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 0;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .prediction-controls {
+      display: grid;
+      align-content: start;
+      gap: 13px;
+      overflow: auto;
+      padding: 18px 20px;
+      border-right: 1px solid #dcebec;
+      background: var(--theme-pale);
+    }
+
+    .prediction-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+    }
+
+    .prediction-form-grid .full-span {
+      grid-column: 1 / -1;
+    }
+
+    .resource-total {
+      padding: 13px;
+      border: 1px solid #c7e2e3;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .resource-total span {
+      display: block;
+      color: #6f9298;
+      font-size: 9px;
+      letter-spacing: .1em;
+    }
+
+    .resource-total strong {
+      display: block;
+      margin-top: 2px;
+      color: #176e80;
+      font:
+        600 30px
+        Georgia,
+        "Songti SC",
+        serif;
+    }
+
+    .resource-total small {
+      display: block;
+      margin-top: 4px;
+      color: #819ba0;
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .prediction-assumption {
+      margin: 0;
+      padding: 10px 11px;
+      border-radius: 10px;
+      background: #e8f3f2;
+      color: #657f84;
+      font-size: 9px;
+      line-height: 1.6;
+    }
+
+    .prediction-run {
+      min-height: 44px;
+      border: 1px solid var(--theme-primary);
+      border-radius: 11px;
+      background:
+        linear-gradient(
+          135deg,
+          var(--theme-primary),
+          var(--theme-deep)
+        );
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .prediction-run-progress {
+      height: 5px;
+      margin: -5px 0 0;
+    }
+
+    .prediction-run-status {
+      min-height: 14px;
+      margin: -5px 0 0;
+      color: #7b9398;
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .prediction-results {
+      min-width: 0;
+      overflow: auto;
+      padding: 18px 20px;
+      background: #fbfefd;
+    }
+
+    .prediction-placeholder {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 40px 20px;
+      color: #7e999e;
+      font-size: 11px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    .prediction-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .prediction-summary article {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid #d3e7e8;
+      border-radius: 11px;
+      background: #fff;
+    }
+
+    .prediction-summary span {
+      display: block;
+      color: #76949a;
+      font-size: 8px;
+      letter-spacing: .08em;
+    }
+
+    .prediction-summary strong {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: #1d5966;
+      font-size: 16px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .prediction-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 14px;
+      border: 1px solid #d3e7e8;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .prediction-actions p {
+      margin: 0;
+      color: #6f8d93;
+      font-size: 9px;
+      line-height: 1.6;
+    }
+
+    .prediction-download {
+      min-height: 38px;
+      flex: 0 0 auto;
+      padding: 0 14px;
+      border: 1px solid #5babb7;
+      border-radius: 10px;
+      background: #eefafa;
+      color: #216f80;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .guide-list {
+      display: grid;
+      gap: 11px;
+      overflow: auto;
+      padding: 18px 24px 22px;
+    }
+
+    .guide-list article {
+      padding: 12px 13px;
+      border:
+        1px solid rgba(var(--theme-rgb), .16);
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .guide-list b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--theme-primary);
+      font-size: 12px;
+    }
+
+    .guide-list p {
+      margin: 0;
+      color: #55757c;
+      font-size: 10px;
+      line-height: 1.7;
+    }
+
+    .rules {
+      overflow: auto;
+      padding: 18px 25px;
+    }
+
+    .rules p {
+      margin: 0 0 12px;
+      color: #456b73;
+      font-size: 12px;
+      line-height: 1.75;
+    }
+
+    .rules b {
+      margin-right: 5px;
+      color: #176e80;
+    }
+
+    .rules .note {
+      padding: 12px;
+      border-radius: 12px;
+      background: #eef6f5;
+      color: #718b90;
+      font-size: 10px;
+    }
+
+    .toast {
+      min-width: 180px;
+      max-width: calc(100vw - 32px);
+      position: fixed;
+      z-index: 50;
+      left: 50%;
+      bottom: 26px;
+      padding: 11px 16px;
+      border:
+        1px solid rgba(255, 255, 255, .65);
+      border-radius: 12px;
+      background: rgba(20, 72, 84, .92);
+      color: #fff;
+      box-shadow:
+        0 15px 45px rgba(11, 50, 61, .25);
+      font-size: 12px;
+      text-align: center;
+      transform: translateX(-50%);
+    }
+
+    @media (max-width: 820px) {
+      .wish-page {
+        padding: 16px 12px 28px;
+      }
+
+      .brand small {
+        display: none;
+      }
+
+      .hero {
+        margin-top: 5px;
+      }
+
+      .mode-tabs {
+        margin-top: 9px;
+      }
+
+      h1 {
+        font-size: 35px;
+        letter-spacing: .04em;
+      }
+
+      .up-card {
+        width: 215px;
+        min-height: 101px;
+        margin-top: 13px;
+      }
+
+      .up-card strong {
+        font-size: 22px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .result-stage {
+        display: block;
+        min-height: 240px;
+        margin-top: 13px;
+        padding: 10px;
+      }
+
+      .result-grid {
+        gap: 8px;
+      }
+
+      .result-grid.single {
+        grid-template-columns:
+          minmax(220px, 340px);
+      }
+
+      .result-grid:not(.single) {
+        grid-template-columns: 1fr;
+        grid-template-rows:
+          repeat(10, auto);
+      }
+
+      .result-grid:not(.single) .result-card {
+        min-height: 74px;
+        display: grid;
+        grid-template-columns:
+          50px minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
+        gap: 2px 10px;
+        padding: 9px 12px;
+        text-align: left;
+      }
+
+      .result-grid:not(.single) .item-icon {
+        width: 44px;
+        height: 44px;
+        grid-column: 1;
+        grid-row: 1 / 3;
+        margin: 0;
+      }
+
+      .result-grid:not(.single) .result-name {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: end;
+        font-size: 14px;
+      }
+
+      .result-grid:not(.single) .rarity {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: start;
+        font-size: 10px;
+        letter-spacing: 0;
+      }
+
+      .result-grid:not(.single) .result-type {
+        grid-column: 3;
+        grid-row: 1;
+        align-self: end;
+        margin: 0;
+        font-size: 9px;
+      }
+
+      .result-grid:not(.single) .pity-note {
+        grid-column: 3;
+        grid-row: 2;
+        align-self: start;
+        margin: 0;
+      }
+
+      .result-grid:not(.single) .mechanism,
+      .result-grid:not(.single)
+      .result-card:nth-child(-n+2)
+      .mechanism,
+      .result-grid:not(.single)
+      .result-card:nth-last-child(-n+2)
+      .mechanism {
+        width: auto;
+        max-width: none;
+        inset: 7px 7px 7px 66px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        transform:
+          translateY(4px)
+          scale(.99);
+        transform-origin: 50% 50%;
+      }
+
+      .result-grid:not(.single)
+      .mechanism::after {
+        display: none;
+      }
+
+      .result-grid:not(.single)
+      .result-card:hover
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:focus-visible
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:focus-within
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card.is-active
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-child(-n+2):hover
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-child(-n+2):focus-visible
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-child(-n+2):focus-within
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-child(-n+2).is-active
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-last-child(-n+2):hover
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-last-child(-n+2):focus-visible
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-last-child(-n+2):focus-within
+      .mechanism,
+
+      .result-grid:not(.single)
+      .result-card:nth-last-child(-n+2).is-active
+      .mechanism {
+        transform:
+          translateY(0)
+          scale(1);
+      }
+
+      .modal-body {
+        grid-template-columns: 1fr;
+      }
+
+      .settings-body {
+        grid-template-columns: 1fr;
+      }
+
+      .pool-manager {
+        grid-column: auto;
+      }
+
+      .prediction-body {
+        grid-template-columns: 1fr;
+        overflow: visible;
+      }
+
+      .prediction-controls {
+        overflow: visible;
+        border-right: 0;
+        border-bottom: 1px solid #dcebec;
+      }
+
+      .prediction-results {
+        overflow: visible;
+      }
+
+      .prediction-page-head {
+        align-items: start;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .prediction-page-head p {
+        max-width: none;
+        text-align: left;
+      }
+
+      .prediction-summary {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .prediction-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .prediction-download {
+        width: 100%;
+      }
+
+      .wish-button {
+        width: min(45vw, 184px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .topbar {
+        min-height: 46px;
+      }
+
+      .top-left {
+        gap: 7px;
+      }
+
+      .home-button {
+        width: 36px;
+        min-height: 36px;
+        justify-content: center;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 0;
+      }
+
+      .home-button span {
+        font-size: 17px;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+      }
+
+      .brand b {
+        font-size: 16px;
+      }
+
+      .icon-button {
+        width: 36px;
+        height: 36px;
+      }
+
+      .top-actions {
+        gap: 6px;
+      }
+
+      .mode-tabs {
+        border-radius: 13px;
+      }
+
+      .mode-tab {
+        min-height: 38px;
+        padding: 0 6px;
+        font-size: 10px;
+      }
+
+      .eyebrow {
+        font-size: 9px;
+        letter-spacing: .15em;
+      }
+
+      h1 {
+        font-size: 31px;
+      }
+
+      .banner-name {
+        font-size: 10px;
+      }
+
+      .pity-item {
+        padding: 9px 10px;
+      }
+
+      .stats-head {
+        padding-left: 11px;
+      }
+
+      .stats-title small {
+        display: none;
+      }
+
+      .pity-value {
+        font-size: 16px;
+      }
+
+      .result-grid.single {
+        grid-template-columns: 1fr;
+      }
+
+      .result-grid.single .result-card {
+        min-height: 170px;
+      }
+
+      .wish-controls {
+        gap: 8px;
+      }
+
+      .wish-button {
+        min-height: 54px;
+      }
+
+      .modal-backdrop {
+        padding: 10px;
+      }
+
+      .modal {
+        max-height: 94vh;
+        border-radius: 18px;
+      }
+
+      .modal-head {
+        padding: 16px 16px 11px;
+      }
+
+      .modal-body {
+        padding: 14px 16px;
+      }
+
+      .prediction-body {
+        padding: 0;
+      }
+
+      .prediction-page {
+        margin-top: 12px;
+      }
+
+      .prediction-shell {
+        border-radius: 18px;
+      }
+
+      .prediction-page-head {
+        padding: 17px 16px 13px;
+      }
+
+      .prediction-page-head h2 {
+        font-size: 23px;
+      }
+
+      .prediction-controls,
+      .prediction-results {
+        padding: 14px 16px;
+      }
+
+      .prediction-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .prediction-form-grid .full-span {
+        grid-column: auto;
+      }
+
+      .pool-manager-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pool-manager-list {
+        min-height: 138px;
+      }
+
+      .modal-foot {
+        flex-wrap: wrap;
+        padding: 12px 16px 16px;
+      }
+
+      .danger-button {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .secondary-button,
+      .primary-button {
+        flex: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wish-page">
+    <div class="aurora one" aria-hidden="true"></div>
+    <div class="aurora two" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="top-left">
+        <a
+          class="home-button"
+          href="./index.html"
+          aria-label="返回主页"
+          title="返回主页"
+        >
+          <span aria-hidden="true">←</span>
+          返回主页
+        </a>
+
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            ✦
+          </span>
+
+          <div>
+            <b>原神祈愿模拟器</b>
+            <small>
+              GENSHIN CHARACTER EVENT WISH SIMULATOR
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button
+          id="guide-open"
+          class="icon-button"
+          type="button"
+          aria-label="打开使用说明"
+          title="使用说明"
+        >
+          ?
+        </button>
+
+        <button
+          id="settings-open"
+          class="icon-button"
+          type="button"
+          aria-label="打开设置"
+          title="祈愿设置"
+        >
+          ⚙
+        </button>
+      </div>
+    </header>
+
+    <nav
+      class="mode-tabs"
+      aria-label="主功能切换"
+    >
+      <button
+        class="mode-tab"
+        type="button"
+        data-main-view="wish"
+        aria-selected="true"
+      >
+        常规祈愿模拟
+      </button>
+
+      <button
+        class="mode-tab"
+        type="button"
+        data-main-view="prediction"
+        aria-selected="false"
+      >
+        资源与出金预测
+      </button>
+    </nav>
+
+    <div
+      id="wish-view"
+      class="main-view"
+    >
+
+    <section class="hero">
+      <div class="eyebrow">
+        <span></span>
+        限时角色活动祈愿
+        <span></span>
+      </div>
+
+      <h1>
+        当前祈愿 ·
+        <em id="hero-title-character"></em>
+      </h1>
+
+      <p
+        id="banner-name"
+        class="banner-name"
+      ></p>
+
+      <div class="up-card">
+        <span class="up-kicker">
+          概率 UP！
+        </span>
+
+        <strong id="up-character"></strong>
+
+        <div class="five-stars">
+          ★★★★★
+        </div>
+
+        <small>
+          限定五星角色
+        </small>
+
+        <small
+          id="up-element-badge"
+          class="element-badge"
+        ></small>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stats-head">
+          <div class="stats-title">
+            <b>统计</b>
+            <small>WISH RECORD</small>
+          </div>
+        </div>
+
+        <div
+          class="stats-grid"
+          aria-label="祈愿统计与当前保底状态"
+        >
+          <div class="pity-item">
+            <span class="pity-label">
+              五星水位
+            </span>
+
+            <b
+              id="five-pity"
+              class="pity-value"
+            ></b>
+
+            <progress
+              id="five-progress"
+              max="90"
+              value="0"
+            ></progress>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              四星水位
+            </span>
+
+            <b
+              id="four-pity"
+              class="pity-value"
+            ></b>
+
+            <progress
+              id="four-progress"
+              max="10"
+              value="0"
+            ></progress>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              下一五星
+            </span>
+
+            <b
+              id="guarantee-state"
+              class="pity-value"
+            ></b>
+
+            <small
+              id="guarantee-detail"
+              class="pity-detail"
+            ></small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              明光轨迹
+            </span>
+
+            <b
+              id="radiance-state"
+              class="pity-value"
+            ></b>
+
+            <small
+              id="radiance-detail"
+              class="pity-detail"
+            ></small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              累计祈愿
+            </span>
+
+            <b
+              id="total-wishes"
+              class="pity-value"
+            ></b>
+
+            <small
+              id="rarity-counts"
+              class="pity-detail"
+            ></small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              本轮追 UP
+            </span>
+
+            <b
+              id="up-cycle-pulls"
+              class="pity-value"
+            ></b>
+
+            <small class="pity-detail">
+              从上次 UP 后累计
+            </small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              上次 UP
+            </span>
+
+            <b
+              id="last-up-pulls"
+              class="pity-value"
+            ></b>
+
+            <small class="pity-detail">
+              本轮累计第几抽获得
+            </small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              平均出 UP
+            </span>
+
+            <b
+              id="average-up-pulls"
+              class="pity-value"
+            ></b>
+
+            <small
+              id="up-count-detail"
+              class="pity-detail"
+            ></small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              平均出金水位
+            </span>
+
+            <b
+              id="average-five-pity"
+              class="pity-value"
+            ></b>
+
+            <small
+              id="five-count-detail"
+              class="pity-detail"
+            ></small>
+          </div>
+
+          <div class="pity-item">
+            <span class="pity-label">
+              手气评估
+            </span>
+
+            <b
+              id="luck-level"
+              class="pity-value luck-value"
+            ></b>
+
+            <small
+              id="luck-detail"
+              class="pity-detail"
+            ></small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="result-stage"
+      class="result-stage"
+      aria-live="polite"
+      aria-label="本轮祈愿结果"
+    ></section>
+
+    <section
+      class="wish-controls"
+      aria-label="祈愿操作"
+    >
+      <button
+        id="single-wish"
+        class="wish-button"
+        type="button"
+      >
+        <strong>祈愿 1 次</strong>
+        <small>✦ 160</small>
+      </button>
+
+      <button
+        id="ten-wish"
+        class="wish-button ten"
+        type="button"
+      >
+        <strong>祈愿 10 次</strong>
+        <small>✦ 1,600</small>
+      </button>
+    </section>
+
+    <button
+      id="rules-open"
+      class="rules-link"
+      type="button"
+    >
+      概率与机制说明
+      <span>→</span>
+    </button>
+
+    <p class="tiny-footer">
+      非官方概率模拟工具 · 数据仅保存在当前浏览器
+    </p>
+    </div>
+
+    <section
+      id="prediction-view"
+      class="main-view prediction-page"
+      hidden
+    >
+      <div class="prediction-shell">
+        <header class="prediction-page-head">
+          <div>
+            <span>资源规划</span>
+            <h2>角色池 UP 五星出金预测</h2>
+          </div>
+
+          <p>
+            从相同初始状态独立重复模拟，评估现有纠缠之缘、原石及回收资源是否足以获得当期 UP 五星。
+          </p>
+        </header>
+
+        <div class="prediction-body">
+          <div class="prediction-controls">
+            <div class="prediction-form-grid">
+              <label class="field">
+                <span>角色池五星垫抽数</span>
+                <input
+                  id="prediction-five-pity"
+                  type="number"
+                  min="0"
+                  max="89"
+                  step="1"
+                  value="0"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>角色池四星垫抽数(武器/角色均重置)</span>
+                <input
+                  id="prediction-four-pity"
+                  type="number"
+                  min="0"
+                  max="99"
+                  step="1"
+                  value="0"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>下一五星状态</span>
+                <select id="prediction-guarantee">
+                  <option value="small">小保底</option>
+                  <option value="big">大保底</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>明光连续歪</span>
+                <select id="prediction-radiance">
+                  <option value="0">0 次</option>
+                  <option value="1">1 次</option>
+                  <option value="2">2 次</option>
+                  <option value="3">3 次</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span>纠缠之缘</span>
+                <input
+                  id="prediction-fates"
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  step="1"
+                  value="0"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>原石</span>
+                <input
+                  id="prediction-primos"
+                  type="number"
+                  min="0"
+                  max="160000000"
+                  step="1"
+                  value="0"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>无主的星辉</span>
+                <input
+                  id="prediction-glitter"
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  step="1"
+                  value="0"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>无主的星尘</span>
+                <input
+                  id="prediction-dust"
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  step="1"
+                  value="0"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>本月剩余星尘兑换</span>
+                <input
+                  id="prediction-dust-quota"
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="1"
+                  value="5"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field">
+                <span>独立模拟次数(最高100000)</span>
+                <input
+                  id="prediction-runs"
+                  type="number"
+                  min="1"
+                  max="100000"
+                  step="1"
+                  value="100000"
+                  inputmode="numeric"
+                >
+              </label>
+
+              <label class="field full-span">
+                <span>
+                  星辉返还估算
+                  <small>按账号角色持有情况选择</small>
+                </span>
+
+                <select id="prediction-recycle-profile">
+                  <option value="normal">
+                    常规：每个四星按 2 星辉，五星不计
+                  </option>
+                  <option value="conservative">
+                    保守：四星、五星均不计星辉
+                  </option>
+                  <option value="mature">
+                    高命：四星角色 5、武器 2，歪五星 10
+                  </option>
+                </select>
+              </label>
+            </div>
+
+            <div class="resource-total">
+              <span>当前可立即使用</span>
+              <strong id="prediction-base-pulls">0 抽</strong>
+              <small id="prediction-equation"></small>
+            </div>
+
+            <p class="prediction-assumption">
+              模拟会把三星武器返还的 15 星尘、四五星返还的星辉继续兑换纠缠之缘。
+              星辉按 5:1 且不限量；星尘按 75:1，并受你填写的本月剩余 5 个兑换上限约束。
+            </p>
+
+            <button
+              id="prediction-run"
+              class="prediction-run"
+              type="button"
+            >
+              开始独立模拟
+            </button>
+
+            <progress
+              id="prediction-run-progress"
+              class="prediction-run-progress"
+              max="100"
+              value="0"
+              hidden
+            ></progress>
+
+            <p
+              id="prediction-run-status"
+              class="prediction-run-status"
+              aria-live="polite"
+            ></p>
+          </div>
+
+          <div class="prediction-results">
+            <div
+              id="prediction-placeholder"
+              class="prediction-placeholder"
+            >
+              填写资源与当前垫抽状态后开始模拟。<br>
+              每一轮都会从相同初始状态独立运行，直到获得当期 UP 五星或资源用尽。
+            </div>
+
+            <div id="prediction-output" hidden>
+              <div class="prediction-summary">
+                <article>
+                  <span>成功概率</span>
+                  <strong id="prediction-success-rate"></strong>
+                </article>
+
+                <article>
+                  <span>成功轮次平均出 UP</span>
+                  <strong id="prediction-average"></strong>
+                </article>
+
+                <article>
+                  <span>中位数</span>
+                  <strong id="prediction-median"></strong>
+                </article>
+
+                <article>
+                  <span>平均回收抽数</span>
+                  <strong id="prediction-recycled-average"></strong>
+                </article>
+              </div>
+
+              <div class="prediction-actions">
+                <p id="prediction-export-note">
+                  完整模拟明细不会在页面中展开，可按需下载 CSV 查看。
+                </p>
+
+                <button
+                  id="prediction-download"
+                  class="prediction-download"
+                  type="button"
+                >
+                  下载详细结果 CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="tiny-footer">
+        非官方概率模拟工具 · 数据仅保存在当前浏览器
+      </p>
+    </section>
+  </main>
+
+  <div
+    id="settings-modal"
+    class="modal-backdrop"
+    role="presentation"
+    hidden
+  >
+    <section
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-title"
+    >
+      <header class="modal-head">
+        <div>
+          <span>祈愿配置</span>
+          <h2 id="settings-title">
+            调整卡池与列表
+          </h2>
+        </div>
+
+        <button
+          class="close-button"
+          type="button"
+          data-close="settings-modal"
+          aria-label="关闭设置"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="modal-body settings-body">
+        <label class="field">
+          <span>五星 UP 角色</span>
+          <select id="up-five-select"></select>
+        </label>
+
+        <div class="field">
+          <span>
+            四星 UP 角色
+            <small>请选择三名不同角色</small>
+          </span>
+
+          <div class="triple">
+            <select
+              id="up-four-1"
+              aria-label="第一名四星 UP 角色"
+            ></select>
+
+            <select
+              id="up-four-2"
+              aria-label="第二名四星 UP 角色"
+            ></select>
+
+            <select
+              id="up-four-3"
+              aria-label="第三名四星 UP 角色"
+            ></select>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>
+            常驻五星池
+            <small>Ctrl / ⌘ 可多选</small>
+          </span>
+
+          <select
+            id="standard-five-select"
+            multiple
+          ></select>
+        </label>
+
+        <label class="field">
+          <span>
+            四星角色池
+            <small>Ctrl / ⌘ 可多选</small>
+          </span>
+
+          <select
+            id="four-character-select"
+            multiple
+          ></select>
+        </label>
+
+        <label class="field">
+          <span>
+            四星武器池
+            <small>Ctrl / ⌘ 可多选</small>
+          </span>
+
+          <select
+            id="four-weapon-select"
+            multiple
+          ></select>
+        </label>
+
+        <label class="field">
+          <span>
+            三星武器池
+            <small>Ctrl / ⌘ 可多选</small>
+          </span>
+
+          <select
+            id="three-weapon-select"
+            multiple
+          ></select>
+        </label>
+
+        <section
+          class="pool-manager"
+          aria-labelledby="pool-manager-title"
+        >
+          <div class="pool-manager-head">
+            <b id="pool-manager-title">
+              自定义角色 / 武器列表
+            </b>
+            <small>
+              可添加、删除或恢复任一分类；保存配置后生效
+            </small>
+          </div>
+
+          <div class="pool-manager-grid">
+            <select
+              id="catalog-manager-list"
+              class="pool-manager-list"
+              multiple
+              aria-label="当前分类条目"
+            ></select>
+
+            <div class="pool-manager-tools">
+              <select
+                id="catalog-manager-category"
+                aria-label="选择要管理的分类"
+              >
+                <option value="limitedFive">
+                  五星 UP 候选角色
+                </option>
+                <option value="standardFive">
+                  常驻五星角色
+                </option>
+                <option value="fourCharacters">
+                  四星角色
+                </option>
+                <option value="fourWeapons">
+                  四星武器
+                </option>
+                <option value="threeWeapons">
+                  三星武器
+                </option>
+              </select>
+
+              <input
+                id="catalog-item-name"
+                type="text"
+                maxlength="30"
+                placeholder="输入要添加的角色或武器名称"
+                autocomplete="off"
+              >
+
+              <select
+                id="catalog-item-element"
+                aria-label="角色元素属性"
+              >
+                <option value="风">风元素</option>
+                <option value="岩">岩元素</option>
+                <option value="雷">雷元素</option>
+                <option value="草">草元素</option>
+                <option value="水">水元素</option>
+                <option value="火">火元素</option>
+                <option value="冰">冰元素</option>
+              </select>
+
+              <div class="pool-manager-actions">
+                <button
+                  id="catalog-add"
+                  class="add-item"
+                  type="button"
+                >
+                  添加 / 更新
+                </button>
+
+                <button
+                  id="catalog-delete"
+                  class="delete-item"
+                  type="button"
+                >
+                  删除所选
+                </button>
+
+                <button
+                  id="catalog-restore"
+                  type="button"
+                >
+                  恢复该分类默认项
+                </button>
+              </div>
+
+              <p
+                id="catalog-manager-note"
+                class="pool-manager-note"
+              ></p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="modal-foot">
+        <button
+          id="reset-record"
+          class="danger-button"
+          type="button"
+        >
+          重置祈愿记录
+        </button>
+
+        <button
+          class="secondary-button"
+          type="button"
+          data-close="settings-modal"
+        >
+          取消
+        </button>
+
+        <button
+          id="settings-save"
+          class="primary-button"
+          type="button"
+        >
+          保存配置
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <div
+    id="guide-modal"
+    class="modal-backdrop"
+    role="presentation"
+    hidden
+  >
+    <section
+      class="modal rules-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="guide-title"
+    >
+      <header class="modal-head">
+        <div>
+          <span>快速上手</span>
+          <h2 id="guide-title">使用说明</h2>
+        </div>
+
+        <button
+          class="close-button"
+          type="button"
+          data-close="guide-modal"
+          aria-label="关闭使用说明"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="guide-list">
+        <article>
+          <b>常规祈愿模拟</b>
+          <p>
+            使用顶部菜单进入后点击单抽或十连。电脑端十连按五星、四星、三星排序横向展示；手机端为十行列表。悬停角色或武器可看本抽触发的保底机制，触屏设备可点按查看。
+          </p>
+        </article>
+
+        <article>
+          <b>统计与垫抽</b>
+          <p>
+            五星和四星水位都只对应角色活动祈愿：角色池抽到三星武器会同时累加两种水位，抽到任意四星角色或武器会重置四星水位。大小保底、捕获明光和统计记录保存在当前浏览器。
+          </p>
+        </article>
+
+        <article>
+          <b>资源与出金预测</b>
+          <p>
+            通过顶部菜单切换。五星垫抽可对应提瓦特小助手的“角色”栏；四星垫抽是角色池距最近四星角色或武器的抽数。填写资源与模拟轮数后运行，页面显示汇总，完整逐轮结果可下载 CSV。
+          </p>
+        </article>
+
+        <article>
+          <b>设置与列表管理</b>
+          <p>
+            右上角齿轮可选择当期五星与四星 UP，并调整常驻五星、四星角色、四星武器、三星武器池。列表管理器允许添加、删除或恢复默认条目；自定义角色时请同时选择正确元素，页面主题会随五星 UP 元素变化。
+          </p>
+        </article>
+
+        <article>
+          <b>数据说明</b>
+          <p>
+            所有设置和祈愿记录仅存于当前浏览器的本地存储；清理浏览器数据或更换设备后不会自动同步。概率拟合的边界与未公开机制请查看“概率与机制说明”。
+          </p>
+        </article>
+      </div>
+
+      <footer class="modal-foot">
+        <button
+          class="primary-button"
+          type="button"
+          data-close="guide-modal"
+        >
+          开始使用
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <div
+    id="rules-modal"
+    class="modal-backdrop"
+    role="presentation"
+    hidden
+  >
+    <section
+      class="modal rules-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="rules-title"
+    >
+      <header class="modal-head">
+        <div>
+          <span>算法透明</span>
+
+          <h2 id="rules-title">
+            概率与保底
+          </h2>
+        </div>
+
+        <button
+          class="close-button"
+          type="button"
+          data-close="rules-modal"
+          aria-label="关闭说明"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="rules">
+        <p>
+          <b>五星</b>
+          基础概率为 0.6%，第 74 抽起使用常见大样本拟合的软保底曲线逐抽提高，
+          第 90 抽必出五星；获得五星后五星水位归零。
+        </p>
+
+        <p>
+          <b>大小保底</b>
+          非大保底五星先进行 50/50；实际歪到常驻角色后，
+          下个五星必定为当期 UP。五星水位和大保底状态会保存在当前浏览器。
+        </p>
+
+        <p>
+          <b>捕获明光</b>
+          普通小保底原本会歪时，基础转化率按 6% 模拟；
+          连续实际歪两轮后，下一次小保底的综合 UP 概率为 75%；
+          连续实际歪三轮后，下次小保底直接触发捕获明光。
+        </p>
+
+        <p>
+          <b>四星</b>
+          基础概率为 5.1%，第 9 抽使用常见拟合概率，
+          第 10 抽必出四星或以上。五星判定优先；
+          若五星顶掉四星保底，四星保底会顺延到之后的抽取。
+        </p>
+
+        <p>
+          <b>四星 UP</b>
+          非四星大保底时，有 50% 概率命中三名 UP 角色之一；
+          若获得非 UP 四星物品，则下个四星必为 UP 角色。
+        </p>
+
+        <p>
+          <b>资源回收</b>
+          资源预测按 160 原石或 5 星辉兑换 1 个纠缠之缘；
+          三星武器返还 15 星尘，星尘兑换按每个 75、当月最多 5 个计算。
+          因角色持有与命座状态会改变星辉返还，预测面板提供保守、常规和高命三档；
+          页面只显示汇总，完整逐轮结果可导出为 CSV。
+        </p>
+
+        <p>
+          <b>手气评估</b>
+          综合平均五星水位、UP 命中率和四星水位生成 0–100 分娱乐评级；
+          新增统计只记录本版本之后的祈愿，样本越多，评级越稳定。
+        </p>
+
+        <p class="note">
+          重要说明：官方公开了基础概率、综合概率、硬保底、大小保底和捕获明光的
+          关键规则，但没有公开完整服务器代码、软保底逐抽曲线及全部池内权重。
+          本工具对未公开部分采用社区最常见的统计拟合，因此可高度模拟，
+          不能声称与服务器随机实现逐位一致。仅供娱乐。
+        </p>
+      </div>
+
+      <footer class="modal-foot">
+        <button
+          class="primary-button"
+          type="button"
+          data-close="rules-modal"
+        >
+          我知道了
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <div
+    id="toast"
+    class="toast"
+    role="status"
+    aria-live="polite"
+    hidden
+  ></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY =
+        "teyvat-wish-single-html-v1";
+
+      var LIMITED_FIVE = [
+        "奥黛塔",
+        "桑多涅",
+        "洛恩",
+        "尼可",
+        "莉奈娅",
+        "法尔伽",
+        "兹白",
+        "哥伦比娅",
+        "杜林",
+        "奈芙尔",
+        "菲林斯",
+        "菈乌玛",
+        "伊涅芙",
+        "丝柯克",
+        "爱可菲",
+        "瓦雷莎",
+        "玛薇卡",
+        "茜特菈莉",
+        "阿蕾奇诺",
+        "希诺宁",
+        "恰斯卡",
+        "玛拉妮",
+        "基尼奇",
+        "艾梅莉埃",
+        "克洛琳德",
+        "希格雯",
+        "千织",
+        "闲云",
+        "那维莱特",
+        "莱欧斯利",
+        "芙宁娜",
+        "娜维娅",
+        "林尼",
+        "白术",
+        "流浪者",
+        "艾尔海森",
+        "纳西妲",
+        "妮露",
+        "赛诺",
+        "夜兰",
+        "神里绫人",
+        "八重神子",
+        "申鹤",
+        "荒泷一斗",
+        "珊瑚宫心海",
+        "雷电将军",
+        "宵宫",
+        "神里绫华",
+        "枫原万叶",
+        "优菈",
+        "胡桃",
+        "魈",
+        "甘雨",
+        "阿贝多",
+        "钟离",
+        "达达利亚",
+        "可莉",
+        "温迪"
+      ];
+
+      var STANDARD_FIVE = [
+        "琴",
+        "迪卢克",
+        "莫娜",
+        "七七",
+        "刻晴",
+        "提纳里",
+        "迪希雅",
+        "梦见月瑞希"
+      ];
+
+      var FOUR_CHARACTERS = [
+        "阿罗夏",
+        "布伦妮",
+        "叶洛亚",
+        "雅珂达",
+        "爱诺",
+        "伊法",
+        "塔利雅",
+        "伊安珊",
+        "蓝砚",
+        "欧洛伦",
+        "卡齐娜",
+        "赛索斯",
+        "夏沃蕾",
+        "嘉明",
+        "夏洛蒂",
+        "菲米尼",
+        "琳妮特",
+        "绮良良",
+        "卡维",
+        "米卡",
+        "瑶瑶",
+        "珐露珊",
+        "莱依拉",
+        "坎蒂丝",
+        "多莉",
+        "柯莱",
+        "鹿野院平藏",
+        "久岐忍",
+        "云堇",
+        "五郎",
+        "九条裟罗",
+        "早柚",
+        "托马",
+        "烟绯",
+        "罗莎莉亚",
+        "辛焱",
+        "迪奥娜",
+        "砂糖",
+        "重云",
+        "诺艾尔",
+        "班尼特",
+        "菲谢尔",
+        "凝光",
+        "行秋",
+        "北斗",
+        "香菱",
+        "雷泽",
+        "芭芭拉"
+      ];
+
+      var FOUR_WEAPONS = [
+        "匣里龙吟",
+        "西风剑",
+        "祭礼剑",
+        "笛剑",
+        "雨裁",
+        "西风大剑",
+        "祭礼大剑",
+        "钟剑",
+        "匣里灭辰",
+        "西风长枪",
+        "昭心",
+        "西风秘典",
+        "祭礼残章",
+        "流浪乐章",
+        "弓藏",
+        "西风猎弓",
+        "祭礼弓",
+        "绝弦"
+      ];
+
+      var THREE_WEAPONS = [
+        "冷刃",
+        "黎明神剑",
+        "飞天御剑",
+        "以理服人",
+        "沐浴龙血的剑",
+        "铁影阔剑",
+        "黑缨枪",
+        "翡玉法球",
+        "讨龙英杰谭",
+        "魔导绪论",
+        "弹弓",
+        "神射手之誓",
+        "鸦羽弓"
+      ];
+
+      var DEFAULT_CATALOGS = {
+        limitedFive: LIMITED_FIVE.slice(),
+        standardFive: STANDARD_FIVE.slice(),
+        fourCharacters:
+          FOUR_CHARACTERS.slice(),
+        fourWeapons: FOUR_WEAPONS.slice(),
+        threeWeapons: THREE_WEAPONS.slice()
+      };
+
+      var CATALOG_LABELS = {
+        limitedFive: "五星 UP 候选角色",
+        standardFive: "常驻五星角色",
+        fourCharacters: "四星角色",
+        fourWeapons: "四星武器",
+        threeWeapons: "三星武器"
+      };
+
+      var CHARACTER_CATALOGS = [
+        "limitedFive",
+        "standardFive",
+        "fourCharacters"
+      ];
+
+      var DEFAULT_ELEMENTS = {
+        "奥黛塔": "冰",
+        "桑多涅": "岩",
+        "洛恩": "水",
+        "尼可": "风",
+        "莉奈娅": "雷",
+        "法尔伽": "风",
+        "兹白": "岩",
+        "哥伦比娅": "水",
+        "杜林": "火",
+        "奈芙尔": "草",
+        "菲林斯": "雷",
+        "菈乌玛": "草",
+        "伊涅芙": "雷",
+        "丝柯克": "冰",
+        "爱可菲": "冰",
+        "瓦雷莎": "雷",
+        "玛薇卡": "火",
+        "茜特菈莉": "冰",
+        "阿蕾奇诺": "火",
+        "希诺宁": "岩",
+        "恰斯卡": "风",
+        "玛拉妮": "水",
+        "基尼奇": "草",
+        "艾梅莉埃": "草",
+        "克洛琳德": "雷",
+        "希格雯": "水",
+        "千织": "岩",
+        "闲云": "风",
+        "那维莱特": "水",
+        "莱欧斯利": "冰",
+        "芙宁娜": "水",
+        "娜维娅": "岩",
+        "林尼": "火",
+        "白术": "草",
+        "流浪者": "风",
+        "艾尔海森": "草",
+        "纳西妲": "草",
+        "妮露": "水",
+        "赛诺": "雷",
+        "夜兰": "水",
+        "神里绫人": "水",
+        "八重神子": "雷",
+        "申鹤": "冰",
+        "荒泷一斗": "岩",
+        "珊瑚宫心海": "水",
+        "雷电将军": "雷",
+        "宵宫": "火",
+        "神里绫华": "冰",
+        "枫原万叶": "风",
+        "优菈": "冰",
+        "胡桃": "火",
+        "魈": "风",
+        "甘雨": "冰",
+        "阿贝多": "岩",
+        "钟离": "岩",
+        "达达利亚": "水",
+        "可莉": "火",
+        "温迪": "风",
+        "琴": "风",
+        "迪卢克": "火",
+        "莫娜": "水",
+        "七七": "冰",
+        "刻晴": "雷",
+        "提纳里": "草",
+        "迪希雅": "火",
+        "梦见月瑞希": "风",
+        "阿罗夏": "冰",
+        "布伦妮": "水",
+        "叶洛亚": "草",
+        "雅珂达": "火",
+        "爱诺": "水",
+        "伊法": "风",
+        "塔利雅": "水",
+        "伊安珊": "雷",
+        "蓝砚": "风",
+        "欧洛伦": "雷",
+        "卡齐娜": "岩",
+        "赛索斯": "雷",
+        "夏沃蕾": "火",
+        "嘉明": "火",
+        "夏洛蒂": "冰",
+        "菲米尼": "冰",
+        "琳妮特": "风",
+        "绮良良": "草",
+        "卡维": "草",
+        "米卡": "冰",
+        "瑶瑶": "草",
+        "珐露珊": "风",
+        "莱依拉": "冰",
+        "坎蒂丝": "水",
+        "多莉": "雷",
+        "柯莱": "草",
+        "鹿野院平藏": "风",
+        "久岐忍": "雷",
+        "云堇": "岩",
+        "五郎": "岩",
+        "九条裟罗": "雷",
+        "早柚": "风",
+        "托马": "火",
+        "烟绯": "火",
+        "罗莎莉亚": "冰",
+        "辛焱": "火",
+        "迪奥娜": "冰",
+        "砂糖": "风",
+        "重云": "冰",
+        "诺艾尔": "岩",
+        "班尼特": "火",
+        "菲谢尔": "雷",
+        "凝光": "岩",
+        "行秋": "水",
+        "北斗": "雷",
+        "香菱": "火",
+        "雷泽": "雷",
+        "芭芭拉": "水"
+      };
+
+      var ELEMENT_THEMES = {
+        "风": {
+          primary: "#269a8a",
+          accent: "#69cdb8",
+          deep: "#17695f",
+          soft: "#def3ec",
+          pale: "#f2faf7",
+          rgb: "38, 154, 138"
+        },
+        "岩": {
+          primary: "#a87524",
+          accent: "#ddb766",
+          deep: "#71501d",
+          soft: "#f5ecd8",
+          pale: "#fcf8ef",
+          rgb: "168, 117, 36"
+        },
+        "雷": {
+          primary: "#7655b7",
+          accent: "#b39ae5",
+          deep: "#4c397e",
+          soft: "#ece6f8",
+          pale: "#f8f5fc",
+          rgb: "118, 85, 183"
+        },
+        "草": {
+          primary: "#5f8e2d",
+          accent: "#9fc65a",
+          deep: "#3f651c",
+          soft: "#e9f2d9",
+          pale: "#f7faef",
+          rgb: "95, 142, 45"
+        },
+        "水": {
+          primary: "#347fc1",
+          accent: "#72b5e5",
+          deep: "#245783",
+          soft: "#e0eef8",
+          pale: "#f3f8fc",
+          rgb: "52, 127, 193"
+        },
+        "火": {
+          primary: "#b95745",
+          accent: "#e58d70",
+          deep: "#7c392f",
+          soft: "#f7e5df",
+          pale: "#fcf5f2",
+          rgb: "185, 87, 69"
+        },
+        "冰": {
+          primary: "#3d91a5",
+          accent: "#83cbd5",
+          deep: "#286276",
+          soft: "#e0f1f3",
+          pale: "#f3fafb",
+          rgb: "61, 145, 165"
+        }
+      };
+
+      var NAME_MIGRATIONS = {
+        "奥黛特（7.0）": "奥黛塔",
+        "奥黛特": "奥黛塔",
+        "奥黛塔（7.0）": "奥黛塔",
+        "阿廖沙（7.0）": "阿罗夏",
+        "阿廖沙": "阿罗夏",
+        "阿罗夏（7.0）": "阿罗夏",
+        "洛亨": "洛恩"
+      };
+
+      var DEFAULT_CONFIG = {
+        up5: "奥黛塔",
+        standard5: STANDARD_FIVE.slice(),
+        up4: [
+          "阿罗夏",
+          "砂糖",
+          "琳妮特"
+        ],
+        fourPool: FOUR_CHARACTERS.slice(),
+        fourWeapons: FOUR_WEAPONS.slice(),
+        threeWeapons: THREE_WEAPONS.slice()
+      };
+
+      var DEFAULT_STATE = {
+        fivePity: 0,
+        fourPity: 0,
+        guaranteed5: false,
+        guaranteed4: false,
+        radianceLosses: 0,
+        total: 0,
+        totalFive: 0,
+        totalFour: 0,
+        totalThree: 0,
+        upFiveCount: 0,
+        offBannerFiveCount: 0,
+        fivePitySum: 0,
+        fourPitySum: 0,
+        upCyclePulls: 0,
+        lastUpPulls: 0,
+        upPullsSum: 0
+      };
+
+      var config = clone(DEFAULT_CONFIG);
+      var catalogs = clone(DEFAULT_CATALOGS);
+      var elementMap = clone(DEFAULT_ELEMENTS);
+      var settingsDraftCatalogs = null;
+      var settingsDraftElements = null;
+      var wishState = clone(DEFAULT_STATE);
+      var pulling = false;
+      var toastTimer = 0;
+      var lastPredictionResults = null;
+      var lastPredictionContext = null;
+      var predictionRunning = false;
+
+      function id(name) {
+        return document.getElementById(name);
+      }
+
+      function clone(value) {
+        return JSON.parse(
+          JSON.stringify(value)
+        );
+      }
+
+      function unique(values) {
+        return values.filter(
+          function (value, index, list) {
+            return list.indexOf(value) === index;
+          }
+        );
+      }
+
+      function clampInteger(
+        value,
+        minimum,
+        maximum
+      ) {
+        value = Number(value);
+
+        if (!Number.isFinite(value)) {
+          return minimum;
+        }
+
+        return Math.max(
+          minimum,
+          Math.min(
+            maximum,
+            Math.floor(value)
+          )
+        );
+      }
+
+      function migrateName(value) {
+        return NAME_MIGRATIONS[value] || value;
+      }
+
+      function validSelection(
+        values,
+        catalog,
+        fallback
+      ) {
+        if (!Array.isArray(values)) {
+          return fallback.slice();
+        }
+
+        var cleaned = unique(
+          values
+            .map(migrateName)
+            .filter(function (value) {
+              return catalog.indexOf(value) !== -1;
+            })
+        );
+
+        var fallbackValues = fallback
+          .map(migrateName)
+          .filter(function (value) {
+            return catalog.indexOf(value) !== -1;
+          });
+
+        return cleaned.length
+          ? cleaned
+          : fallbackValues.length
+            ? fallbackValues
+            : catalog.slice();
+      }
+
+      function cleanCatalog(values) {
+        if (!Array.isArray(values)) {
+          return [];
+        }
+
+        return unique(
+          values
+            .map(function (value) {
+              return migrateName(
+                String(value).trim()
+              );
+            })
+            .filter(function (value) {
+              return value.length > 0;
+            })
+        );
+      }
+
+      function sanitizeCatalogs(value) {
+        value =
+          value && typeof value === "object"
+            ? value
+            : {};
+
+        var next = {};
+
+        Object.keys(DEFAULT_CATALOGS)
+          .forEach(function (key) {
+            var cleaned = cleanCatalog(
+              value[key]
+            );
+
+            next[key] = cleaned.length
+              ? cleaned
+              : DEFAULT_CATALOGS[key].slice();
+          });
+
+        next.limitedFive =
+          next.limitedFive.filter(
+            function (name) {
+              return (
+                next.standardFive.indexOf(name) ===
+                -1
+              );
+            }
+          );
+
+        if (!next.limitedFive.length) {
+          next.limitedFive =
+            DEFAULT_CATALOGS.limitedFive
+              .filter(function (name) {
+                return (
+                  next.standardFive.indexOf(name) ===
+                  -1
+                );
+              });
+        }
+
+        return next;
+      }
+
+      function sanitizeElements(value) {
+        var next = clone(DEFAULT_ELEMENTS);
+        var allowed = Object.keys(
+          ELEMENT_THEMES
+        );
+
+        if (
+          !value ||
+          typeof value !== "object"
+        ) {
+          return next;
+        }
+
+        Object.keys(value).forEach(
+          function (name) {
+            if (
+              allowed.indexOf(value[name]) !==
+              -1
+            ) {
+              next[migrateName(name)] =
+                value[name];
+            }
+          }
+        );
+
+        return next;
+      }
+
+      function sanitizeConfig(value) {
+        value =
+          value && typeof value === "object"
+            ? value
+            : {};
+
+        var up4 = validSelection(
+          value.up4,
+          catalogs.fourCharacters,
+          DEFAULT_CONFIG.up4
+        );
+
+        if (up4.length !== 3) {
+          up4 =
+            catalogs.fourCharacters
+              .slice(0, 3);
+        }
+
+        var up5 = migrateName(value.up5);
+
+        return {
+          up5:
+            catalogs.limitedFive.indexOf(
+              up5
+            ) !== -1
+              ? up5
+              : catalogs.limitedFive[0],
+
+          standard5: validSelection(
+            value.standard5,
+            catalogs.standardFive,
+            DEFAULT_CONFIG.standard5
+          ),
+
+          up4: up4,
+
+          fourPool: validSelection(
+            value.fourPool,
+            catalogs.fourCharacters,
+            DEFAULT_CONFIG.fourPool
+          ),
+
+          fourWeapons: validSelection(
+            value.fourWeapons,
+            catalogs.fourWeapons,
+            DEFAULT_CONFIG.fourWeapons
+          ),
+
+          threeWeapons: validSelection(
+            value.threeWeapons,
+            catalogs.threeWeapons,
+            DEFAULT_CONFIG.threeWeapons
+          )
+        };
+      }
+
+      function sanitizeState(value) {
+        value =
+          value && typeof value === "object"
+            ? value
+            : {};
+
+        return {
+          fivePity: clampInteger(
+            value.fivePity,
+            0,
+            89
+          ),
+
+          fourPity: clampInteger(
+            value.fourPity,
+            0,
+            99
+          ),
+
+          guaranteed5:
+            value.guaranteed5 === true,
+
+          guaranteed4:
+            value.guaranteed4 === true,
+
+          radianceLosses: clampInteger(
+            value.radianceLosses,
+            0,
+            3
+          ),
+
+          total: clampInteger(
+            value.total,
+            0,
+            1000000000
+          ),
+
+          totalFive: clampInteger(
+            value.totalFive,
+            0,
+            1000000000
+          ),
+
+          totalFour: clampInteger(
+            value.totalFour,
+            0,
+            1000000000
+          ),
+
+          totalThree: clampInteger(
+            value.totalThree,
+            0,
+            1000000000
+          ),
+
+          upFiveCount: clampInteger(
+            value.upFiveCount,
+            0,
+            1000000000
+          ),
+
+          offBannerFiveCount: clampInteger(
+            value.offBannerFiveCount,
+            0,
+            1000000000
+          ),
+
+          fivePitySum: clampInteger(
+            value.fivePitySum,
+            0,
+            90000000000
+          ),
+
+          fourPitySum: clampInteger(
+            value.fourPitySum,
+            0,
+            10000000000
+          ),
+
+          upCyclePulls: clampInteger(
+            value.upCyclePulls === undefined
+              ? value.fivePity
+              : value.upCyclePulls,
+            0,
+            1000000000
+          ),
+
+          lastUpPulls: clampInteger(
+            value.lastUpPulls,
+            0,
+            1000000000
+          ),
+
+          upPullsSum: clampInteger(
+            value.upPullsSum,
+            0,
+            100000000000
+          )
+        };
+      }
+
+      function loadData() {
+        try {
+          var raw =
+            localStorage.getItem(STORAGE_KEY);
+
+          if (!raw) {
+            return;
+          }
+
+          var saved = JSON.parse(raw);
+
+          catalogs = sanitizeCatalogs(
+            saved.catalogs
+          );
+
+          elementMap = sanitizeElements(
+            saved.elements
+          );
+
+          config =
+            sanitizeConfig(saved.config);
+
+          wishState =
+            sanitizeState(saved.state);
+        } catch (error) {
+          config = clone(DEFAULT_CONFIG);
+          catalogs = clone(DEFAULT_CATALOGS);
+          elementMap = clone(DEFAULT_ELEMENTS);
+          wishState = clone(DEFAULT_STATE);
+        }
+      }
+
+      function saveData() {
+        try {
+          localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+              config: config,
+              state: wishState,
+              catalogs: catalogs,
+              elements: elementMap
+            })
+          );
+        } catch (error) {
+          showToast(
+            "浏览器阻止了本地存档，本次仍可继续使用"
+          );
+        }
+      }
+
+      function randomUnit() {
+        if (
+          window.crypto &&
+          window.crypto.getRandomValues
+        ) {
+          var data = new Uint32Array(1);
+
+          window.crypto.getRandomValues(data);
+
+          return data[0] / 4294967296;
+        }
+
+        return Math.random();
+      }
+
+      function pick(list) {
+        return list[
+          Math.floor(randomUnit() * list.length)
+        ];
+      }
+
+      function fiveRate(nextPity) {
+        if (nextPity >= 90) {
+          return 1;
+        }
+
+        if (nextPity <= 73) {
+          return .006;
+        }
+
+        return Math.min(
+          1,
+          .006 + .06 * (nextPity - 73)
+        );
+      }
+
+      function fourRate(nextPity) {
+        if (nextPity >= 10) {
+          return 1;
+        }
+
+        if (nextPity === 9) {
+          return .561;
+        }
+
+        return .051;
+      }
+
+      function rarityPrefix(
+        rarity,
+        pity
+      ) {
+        if (
+          rarity === 5 &&
+          pity >= 90
+        ) {
+          return "五星硬保底 · ";
+        }
+
+        if (
+          rarity === 5 &&
+          pity >= 74
+        ) {
+          return "五星软保底 · ";
+        }
+
+        if (
+          rarity === 4 &&
+          pity >= 10
+        ) {
+          return "四星保底补发 · ";
+        }
+
+        if (
+          rarity === 4 &&
+          pity === 9
+        ) {
+          return "四星软保底 · ";
+        }
+
+        return "";
+      }
+
+      function resolveFive(
+        nextPity,
+        itemId
+      ) {
+        var name = config.up5;
+
+        var mechanism =
+          rarityPrefix(5, nextPity);
+
+        if (wishState.guaranteed5) {
+          mechanism +=
+            "大保底：必定获得当期 UP";
+
+          wishState.guaranteed5 = false;
+        } else if (
+          wishState.radianceLosses >= 3
+        ) {
+          mechanism +=
+            "捕获明光：连续三次歪后必定触发";
+
+          wishState.radianceLosses = 0;
+        } else if (
+          randomUnit() < .5
+        ) {
+          mechanism +=
+            "小保底：50/50 未歪";
+
+          wishState.radianceLosses = 0;
+        } else {
+          var captureRate =
+            wishState.radianceLosses >= 2
+              ? .5
+              : .06;
+
+          if (
+            randomUnit() < captureRate
+          ) {
+            mechanism +=
+              wishState.radianceLosses >= 2
+                ? "捕获明光：连续两次歪后高概率转化"
+                : "捕获明光：基础概率转化为当期 UP";
+
+            wishState.radianceLosses = 0;
+          } else {
+            var standardPool =
+              config.standard5.filter(
+                function (character) {
+                  return (
+                    character !== config.up5
+                  );
+                }
+              );
+
+            if (!standardPool.length) {
+              standardPool =
+                catalogs.standardFive.slice();
+            }
+
+            name = pick(standardPool);
+
+            mechanism +=
+              "小保底歪：下个五星进入大保底";
+
+            wishState.guaranteed5 = true;
+
+            wishState.radianceLosses =
+              Math.min(
+                3,
+                wishState.radianceLosses + 1
+              );
+          }
+        }
+
+        wishState.fivePity = 0;
+        wishState.fourPity += 1;
+
+        return {
+          id: itemId,
+          name: name,
+          rarity: 5,
+          type: "角色",
+          mechanism: mechanism,
+          pity: nextPity,
+          isUp: name === config.up5
+        };
+      }
+
+      function resolveFour(
+        nextPity,
+        itemId
+      ) {
+        var name;
+        var type = "角色";
+
+        var mechanism =
+          rarityPrefix(4, nextPity);
+
+        if (
+          wishState.guaranteed4 ||
+          randomUnit() < .5
+        ) {
+          name = pick(config.up4);
+
+          mechanism +=
+            wishState.guaranteed4
+              ? "四星大保底：获得 UP 四星"
+              : "四星小保底：命中 UP 角色";
+
+          wishState.guaranteed4 = false;
+        } else {
+          var offBannerCharacters =
+            config.fourPool.filter(
+              function (character) {
+                return (
+                  config.up4.indexOf(character) === -1
+                );
+              }
+            );
+
+          if (
+            offBannerCharacters.length &&
+            randomUnit() < .5
+          ) {
+            name =
+              pick(offBannerCharacters);
+          } else {
+            name =
+              pick(config.fourWeapons);
+
+            type = "武器";
+          }
+
+          mechanism +=
+            "四星小保底歪：下个四星必为 UP";
+
+          wishState.guaranteed4 = true;
+        }
+
+        wishState.fivePity += 1;
+        wishState.fourPity = 0;
+
+        return {
+          id: itemId,
+          name: name,
+          rarity: 4,
+          type: type,
+          mechanism: mechanism,
+          pity: nextPity
+        };
+      }
+
+      function resolveThree(
+        nextFivePity,
+        itemId
+      ) {
+        wishState.fivePity += 1;
+        wishState.fourPity += 1;
+
+        return {
+          id: itemId,
+          name: pick(config.threeWeapons),
+          rarity: 3,
+          type: "武器",
+          mechanism: "常规祈愿",
+          pity: nextFivePity
+        };
+      }
+
+      function recordWish(item) {
+        wishState.total += 1;
+        wishState.upCyclePulls += 1;
+
+        if (item.rarity === 5) {
+          wishState.totalFive += 1;
+          wishState.fivePitySum += item.pity;
+
+          if (item.isUp) {
+            wishState.upFiveCount += 1;
+            wishState.lastUpPulls =
+              wishState.upCyclePulls;
+
+            wishState.upPullsSum +=
+              wishState.upCyclePulls;
+
+            wishState.upCyclePulls = 0;
+          } else {
+            wishState.offBannerFiveCount += 1;
+          }
+        } else if (item.rarity === 4) {
+          wishState.totalFour += 1;
+          wishState.fourPitySum += item.pity;
+        } else {
+          wishState.totalThree += 1;
+        }
+      }
+
+      function makeWishes(count) {
+        if (pulling) {
+          return;
+        }
+
+        pulling = true;
+        setWishButtonsDisabled(true);
+
+        var batch = [];
+        var seed = Date.now();
+
+        for (
+          var index = 0;
+          index < count;
+          index += 1
+        ) {
+          var nextFivePity =
+            wishState.fivePity + 1;
+
+          var nextFourPity =
+            wishState.fourPity + 1;
+
+          var fiveProbability =
+            fiveRate(nextFivePity);
+
+          var fourProbability =
+            fourRate(nextFourPity);
+
+          var roll = randomUnit();
+          var item;
+
+          if (
+            roll < fiveProbability
+          ) {
+            item = resolveFive(
+              nextFivePity,
+              seed + index
+            );
+          } else {
+            var availableProbability =
+              1 - fiveProbability;
+
+            var effectiveFourProbability =
+              Math.min(
+                fourProbability,
+                availableProbability
+              );
+
+            if (
+              roll <
+              fiveProbability +
+              effectiveFourProbability
+            ) {
+              item = resolveFour(
+                nextFourPity,
+                seed + index
+              );
+            } else {
+              item = resolveThree(
+                nextFivePity,
+                seed + index
+              );
+            }
+          }
+
+          recordWish(item);
+          batch.push(item);
+        }
+
+        renderResults(batch);
+        renderState();
+        saveData();
+
+        window.setTimeout(
+          function () {
+            pulling = false;
+            setWishButtonsDisabled(false);
+          },
+          count === 10 ? 720 : 420
+        );
+      }
+
+      function setWishButtonsDisabled(
+        disabled
+      ) {
+        id("single-wish").disabled =
+          disabled;
+
+        id("ten-wish").disabled =
+          disabled;
+      }
+
+      function formatAverage(
+        total,
+        count
+      ) {
+        if (!count) {
+          return "—";
+        }
+
+        return (
+          Math.round(
+            total / count * 10
+          ) / 10
+        ) + " 抽";
+      }
+
+      function calculateLuck() {
+        var levels = [
+          "专吃保底星人",
+          "绝世非酋",
+          "万劫不复大非酋",
+          "非入骨髓",
+          "面目全非",
+          "脱欧入非",
+          "薛定谔的欧洲人",
+          "初出茅庐的欧皇",
+          "点石成金尊贵欧皇",
+          "宇宙级至尊欧皇",
+          "绝世欧皇"
+        ];
+
+        if (!wishState.totalFive) {
+          return {
+            label: "等待首金",
+            detail: "获得五星后开始评估"
+          };
+        }
+
+        var smoothedFivePity =
+          (
+            wishState.fivePitySum +
+            62.5 * 3
+          ) /
+          (
+            wishState.totalFive + 3
+          );
+
+        var upRate =
+          (
+            wishState.upFiveCount + 1
+          ) /
+          (
+            wishState.totalFive + 2
+          );
+
+        var pityPart =
+          50 +
+          (62.5 - smoothedFivePity) * 1.55;
+
+        var upPart =
+          50 +
+          (upRate - .55) * 90;
+
+        var fourPart = 50;
+
+        if (wishState.totalFour) {
+          var averageFour =
+            wishState.fourPitySum /
+            wishState.totalFour;
+
+          fourPart =
+            50 +
+            (7.7 - averageFour) * 7;
+        }
+
+        var score = Math.max(
+          0,
+          Math.min(
+            100,
+            pityPart * .65 +
+            upPart * .28 +
+            fourPart * .07
+          )
+        );
+
+        var levelIndex = Math.min(
+          levels.length - 1,
+          Math.floor(
+            score / (100 / levels.length)
+          )
+        );
+
+        return {
+          label: levels[levelIndex],
+          detail:
+            "手气 " +
+            Math.round(score) +
+            " / 100 · " +
+            wishState.totalFive +
+            " 金样本"
+        };
+      }
+
+      function applyElementTheme() {
+        var element =
+          elementMap[config.up5] || "风";
+
+        var theme =
+          ELEMENT_THEMES[element] ||
+          ELEMENT_THEMES["风"];
+
+        var root = document.documentElement;
+
+        root.style.setProperty(
+          "--theme-primary",
+          theme.primary
+        );
+
+        root.style.setProperty(
+          "--theme-accent",
+          theme.accent
+        );
+
+        root.style.setProperty(
+          "--theme-deep",
+          theme.deep
+        );
+
+        root.style.setProperty(
+          "--theme-soft",
+          theme.soft
+        );
+
+        root.style.setProperty(
+          "--theme-pale",
+          theme.pale
+        );
+
+        root.style.setProperty(
+          "--theme-rgb",
+          theme.rgb
+        );
+
+        root.setAttribute(
+          "data-up-element",
+          element
+        );
+
+        id("up-element-badge").textContent =
+          element + "元素主题";
+
+        var themeMeta =
+          document.querySelector(
+            'meta[name="theme-color"]'
+          );
+
+        if (themeMeta) {
+          themeMeta.setAttribute(
+            "content",
+            theme.soft
+          );
+        }
+      }
+
+      function renderState() {
+        applyElementTheme();
+
+        id("hero-title-character").textContent =
+          config.up5;
+
+        id("banner-name").textContent =
+          "「" +
+          config.up5 +
+          "」角色活动祈愿";
+
+        id("up-character").textContent =
+          config.up5;
+
+        id("five-pity").replaceChildren(
+          document.createTextNode(
+            String(wishState.fivePity)
+          ),
+          createCounterSuffix("/ 90")
+        );
+
+        id("five-progress").value =
+          wishState.fivePity;
+
+        var fourDisplay =
+          Math.min(
+            wishState.fourPity,
+            10
+          );
+
+        id("four-pity").replaceChildren(
+          document.createTextNode(
+            String(fourDisplay)
+          ),
+          createCounterSuffix("/ 10")
+        );
+
+        id("four-progress").value =
+          fourDisplay;
+
+        var guarantee =
+          id("guarantee-state");
+
+        guarantee.textContent =
+          wishState.guaranteed5
+            ? "大保底"
+            : "小保底";
+
+        guarantee.classList.toggle(
+          "gold",
+          wishState.guaranteed5
+        );
+
+        id("guarantee-detail").textContent =
+          wishState.guaranteed5
+            ? "必定命中当期 UP"
+            : "包含捕获明光判定";
+
+        var radiance =
+          id("radiance-state");
+
+        radiance.textContent =
+          wishState.radianceLosses +
+          " / 3";
+
+        radiance.classList.toggle(
+          "gold",
+          wishState.radianceLosses >= 2
+        );
+
+        id("radiance-detail").textContent =
+          wishState.radianceLosses >= 3
+            ? "下次小保底必定触发"
+            : wishState.radianceLosses >= 2
+              ? "下次小保底综合 75% UP"
+              : "记录连续实际歪的次数";
+
+        id("total-wishes").textContent =
+          wishState.total + " 抽";
+
+        var trackedTotal =
+          wishState.totalFive +
+          wishState.totalFour +
+          wishState.totalThree;
+
+        id("rarity-counts").textContent =
+          trackedTotal || !wishState.total
+            ? "五星 " +
+              wishState.totalFive +
+              " · 四星 " +
+              wishState.totalFour
+            : "详细分类从本版开始记录";
+
+        id("up-cycle-pulls").textContent =
+          wishState.upCyclePulls + " 抽";
+
+        id("last-up-pulls").textContent =
+          wishState.lastUpPulls
+            ? "第 " +
+              wishState.lastUpPulls +
+              " 抽"
+            : "—";
+
+        id("average-up-pulls").textContent =
+          formatAverage(
+            wishState.upPullsSum,
+            wishState.upFiveCount
+          );
+
+        id("up-count-detail").textContent =
+          "已获得 " +
+          wishState.upFiveCount +
+          " 个 UP 五星";
+
+        id("average-five-pity").textContent =
+          formatAverage(
+            wishState.fivePitySum,
+            wishState.totalFive
+          );
+
+        id("five-count-detail").textContent =
+          "UP " +
+          wishState.upFiveCount +
+          " · 歪 " +
+          wishState.offBannerFiveCount;
+
+        var luck = calculateLuck();
+
+        id("luck-level").textContent =
+          luck.label;
+
+        id("luck-detail").textContent =
+          luck.detail;
+      }
+
+      function createCounterSuffix(text) {
+        var suffix =
+          document.createElement("i");
+
+        suffix.textContent = text;
+
+        return suffix;
+      }
+
+      function renderEmpty() {
+        var stage =
+          id("result-stage");
+
+        stage.replaceChildren();
+
+        var empty =
+          document.createElement("div");
+
+        empty.className = "empty";
+
+        var symbol =
+          document.createElement("span");
+
+        symbol.className =
+          "empty-symbol";
+
+        symbol.setAttribute(
+          "aria-hidden",
+          "true"
+        );
+
+        symbol.textContent = "✧";
+
+        var title =
+          document.createElement("p");
+
+        title.textContent =
+          "星辰尚未回应";
+
+        var detail =
+          document.createElement("small");
+
+        detail.textContent =
+          "进行祈愿后，结果与触发机制会在这里展开";
+
+        empty.append(
+          symbol,
+          title,
+          detail
+        );
+
+        stage.append(empty);
+      }
+
+      function renderResults(results) {
+        var stage =
+          id("result-stage");
+
+        stage.replaceChildren();
+
+        var displayResults =
+          results.length === 10
+            ? results
+                .slice()
+                .sort(
+                  function (
+                    first,
+                    second
+                  ) {
+                    return (
+                      second.rarity -
+                      first.rarity
+                    );
+                  }
+                )
+            : results;
+
+        var grid =
+          document.createElement("div");
+
+        grid.className =
+          "result-grid" +
+          (
+            displayResults.length === 1
+              ? " single"
+              : ""
+          );
+
+        displayResults.forEach(
+          function (result, index) {
+            var card =
+              document.createElement(
+                "button"
+              );
+
+            card.type = "button";
+
+            card.className =
+              "result-card rarity-" +
+              result.rarity;
+
+            card.style.animationDelay =
+              String(index * 55) + "ms";
+
+            card.setAttribute(
+              "aria-label",
+              result.name +
+              "，" +
+              result.rarity +
+              "星" +
+              result.type +
+              "。本轮触发：" +
+              result.mechanism
+            );
+
+            var rarity =
+              document.createElement("div");
+
+            rarity.className = "rarity";
+
+            rarity.textContent =
+              "★".repeat(result.rarity);
+
+            var icon =
+              document.createElement("div");
+
+            icon.className = "item-icon";
+
+            icon.setAttribute(
+              "aria-hidden",
+              "true"
+            );
+
+            icon.textContent =
+              result.type === "角色"
+                ? "✦"
+                : "⌁";
+
+            var name =
+              document.createElement(
+                "strong"
+              );
+
+            name.className =
+              "result-name";
+
+            name.textContent =
+              result.name;
+
+            var type =
+              document.createElement("span");
+
+            type.className =
+              "result-type";
+
+            type.textContent =
+              result.type;
+
+            var mechanism =
+              document.createElement("div");
+
+            mechanism.className =
+              "mechanism";
+
+            var trigger =
+              document.createElement("span");
+
+            trigger.textContent =
+              "本轮触发";
+
+            mechanism.append(
+              trigger,
+              document.createTextNode(
+                result.mechanism
+              )
+            );
+
+            card.append(
+              rarity,
+              icon,
+              name,
+              type,
+              mechanism
+            );
+
+            if (result.rarity >= 4) {
+              var pity =
+                document.createElement(
+                  "small"
+                );
+
+              pity.className =
+                "pity-note";
+
+              pity.textContent =
+                "第 " +
+                result.pity +
+                " 抽出" +
+                (
+                  result.rarity === 5
+                    ? "金"
+                    : "紫"
+                );
+
+              card.append(pity);
+            }
+
+            grid.append(card);
+          }
+        );
+
+        stage.append(grid);
+      }
+
+      function predictionNumber(
+        inputId,
+        minimum,
+        maximum
+      ) {
+        return clampInteger(
+          id(inputId).value,
+          minimum,
+          maximum
+        );
+      }
+
+      function getPredictionSettings() {
+        return {
+          fivePity: predictionNumber(
+            "prediction-five-pity",
+            0,
+            89
+          ),
+
+          fourPity: predictionNumber(
+            "prediction-four-pity",
+            0,
+            99
+          ),
+
+          guaranteed5:
+            id("prediction-guarantee").value ===
+            "big",
+
+          guaranteed4:
+            wishState.guaranteed4,
+
+          radianceLosses: predictionNumber(
+            "prediction-radiance",
+            0,
+            3
+          ),
+
+          fates: predictionNumber(
+            "prediction-fates",
+            0,
+            1000000
+          ),
+
+          primogems: predictionNumber(
+            "prediction-primos",
+            0,
+            160000000
+          ),
+
+          starglitter: predictionNumber(
+            "prediction-glitter",
+            0,
+            1000000
+          ),
+
+          stardust: predictionNumber(
+            "prediction-dust",
+            0,
+            1000000
+          ),
+
+          dustQuota: predictionNumber(
+            "prediction-dust-quota",
+            0,
+            5
+          ),
+
+          runs: predictionNumber(
+            "prediction-runs",
+            1,
+            100000
+          ),
+
+          recycleProfile:
+            id(
+              "prediction-recycle-profile"
+            ).value
+        };
+      }
+
+      function calculateInitialBudget(
+        settings
+      ) {
+        var primoPulls = Math.floor(
+          settings.primogems / 160
+        );
+
+        var glitterPulls = Math.floor(
+          settings.starglitter / 5
+        );
+
+        var dustPulls = Math.min(
+          settings.dustQuota,
+          Math.floor(
+            settings.stardust / 75
+          )
+        );
+
+        return {
+          total:
+            settings.fates +
+            primoPulls +
+            glitterPulls +
+            dustPulls,
+
+          fatePulls: settings.fates,
+          primoPulls: primoPulls,
+          glitterPulls: glitterPulls,
+          dustPulls: dustPulls,
+          starglitter:
+            settings.starglitter -
+            glitterPulls * 5,
+          stardust:
+            settings.stardust -
+            dustPulls * 75,
+          dustQuota:
+            settings.dustQuota -
+            dustPulls
+        };
+      }
+
+      function updatePredictionBudget() {
+        var settings =
+          getPredictionSettings();
+
+        var budget =
+          calculateInitialBudget(settings);
+
+        id("prediction-base-pulls").textContent =
+          budget.total + " 抽";
+
+        id("prediction-equation").textContent =
+          settings.fates +
+          " 缘 + " +
+          budget.primoPulls +
+          " 原石兑换 + " +
+          budget.glitterPulls +
+          " 星辉兑换 + " +
+          budget.dustPulls +
+          " 星尘兑换";
+      }
+
+      function syncPredictionState() {
+        id("prediction-five-pity").value =
+          wishState.fivePity;
+
+        id("prediction-four-pity").value =
+          wishState.fourPity;
+
+        id("prediction-guarantee").value =
+          wishState.guaranteed5
+            ? "big"
+            : "small";
+
+        id("prediction-radiance").value =
+          String(wishState.radianceLosses);
+
+        updatePredictionBudget();
+      }
+
+      function createPredictionRandom() {
+        var seed = (
+          Date.now() ^
+          Math.floor(Math.random() * 4294967296)
+        ) >>> 0;
+
+        if (
+          window.crypto &&
+          window.crypto.getRandomValues
+        ) {
+          var seedData =
+            new Uint32Array(1);
+
+          window.crypto.getRandomValues(
+            seedData
+          );
+
+          seed ^= seedData[0];
+        }
+
+        return function () {
+          seed =
+            (seed + 0x6D2B79F5) >>> 0;
+
+          var value = seed;
+
+          value = Math.imul(
+            value ^ value >>> 15,
+            value | 1
+          );
+
+          value ^=
+            value + Math.imul(
+              value ^ value >>> 7,
+              value | 61
+            );
+
+          return (
+            (value ^ value >>> 14) >>> 0
+          ) / 4294967296;
+        };
+      }
+
+      function predictionFiveOutcome(
+        state,
+        random
+      ) {
+        var isUp = true;
+
+        if (state.guaranteed5) {
+          state.guaranteed5 = false;
+        } else if (
+          state.radianceLosses >= 3
+        ) {
+          state.radianceLosses = 0;
+        } else if (random() < .5) {
+          state.radianceLosses = 0;
+        } else {
+          var captureRate =
+            state.radianceLosses >= 2
+              ? .5
+              : .06;
+
+          if (
+            random() < captureRate
+          ) {
+            state.radianceLosses = 0;
+          } else {
+            isUp = false;
+            state.guaranteed5 = true;
+            state.radianceLosses =
+              Math.min(
+                3,
+                state.radianceLosses + 1
+              );
+          }
+        }
+
+        state.fivePity = 0;
+        state.fourPity += 1;
+
+        return isUp ? 5 : -5;
+      }
+
+      function predictionFourOutcome(
+        state,
+        random
+      ) {
+        var isWeapon = false;
+
+        if (
+          state.guaranteed4 ||
+          random() < .5
+        ) {
+          state.guaranteed4 = false;
+        } else {
+          state.guaranteed4 = true;
+
+          if (random() >= .5) {
+            isWeapon = true;
+          }
+        }
+
+        state.fivePity += 1;
+        state.fourPity = 0;
+
+        return isWeapon ? -4 : 4;
+      }
+
+      function predictionPull(
+        state,
+        random
+      ) {
+        var nextFivePity =
+          state.fivePity + 1;
+
+        var nextFourPity =
+          state.fourPity + 1;
+
+        var fiveProbability =
+          fiveRate(nextFivePity);
+
+        var fourProbability =
+          fourRate(nextFourPity);
+
+        var roll = random();
+
+        if (roll < fiveProbability) {
+          return predictionFiveOutcome(
+            state,
+            random
+          );
+        }
+
+        var effectiveFourProbability =
+          Math.min(
+            fourProbability,
+            1 - fiveProbability
+          );
+
+        if (
+          roll <
+          fiveProbability +
+          effectiveFourProbability
+        ) {
+          return predictionFourOutcome(
+            state,
+            random
+          );
+        }
+
+        state.fivePity += 1;
+        state.fourPity += 1;
+
+        return 3;
+      }
+
+      function glitterReturn(
+        outcome,
+        profile
+      ) {
+        if (profile === "conservative") {
+          return 0;
+        }
+
+        if (Math.abs(outcome) === 4) {
+          if (
+            profile === "mature" &&
+            outcome === 4
+          ) {
+            return 5;
+          }
+
+          return 2;
+        }
+
+        if (
+          profile === "mature" &&
+          outcome === -5
+        ) {
+          return 10;
+        }
+
+        return 0;
+      }
+
+      function simulatePredictionRun(
+        settings,
+        budget,
+        random
+      ) {
+        var state = {
+          fivePity: settings.fivePity,
+          fourPity: settings.fourPity,
+          guaranteed5:
+            settings.guaranteed5,
+          guaranteed4:
+            settings.guaranteed4,
+          radianceLosses:
+            settings.radianceLosses
+        };
+
+        var remaining = budget.total;
+        var starglitter =
+          budget.starglitter;
+
+        var stardust = budget.stardust;
+        var dustQuota = budget.dustQuota;
+        var pulls = 0;
+        var recycled = 0;
+        var fiveCount = 0;
+        var offBannerFive = 0;
+
+        while (
+          remaining > 0 &&
+          pulls < 5000
+        ) {
+          remaining -= 1;
+          pulls += 1;
+
+          var outcome =
+            predictionPull(
+              state,
+              random
+            );
+
+          if (Math.abs(outcome) === 5) {
+            fiveCount += 1;
+
+            if (outcome === 5) {
+              return {
+                success: true,
+                upAt: pulls,
+                pulls: pulls,
+                recycled: recycled,
+                fiveCount: fiveCount,
+                offBannerFive:
+                  offBannerFive
+              };
+            }
+
+            offBannerFive += 1;
+          }
+
+          if (outcome === 3) {
+            stardust += 15;
+          } else {
+            starglitter +=
+              glitterReturn(
+                outcome,
+                settings.recycleProfile
+              );
+          }
+
+          var glitterPulls =
+            Math.floor(
+              starglitter / 5
+            );
+
+          if (glitterPulls) {
+            starglitter -=
+              glitterPulls * 5;
+
+            remaining += glitterPulls;
+            recycled += glitterPulls;
+          }
+
+          var dustPulls = Math.min(
+            dustQuota,
+            Math.floor(stardust / 75)
+          );
+
+          if (dustPulls) {
+            stardust -= dustPulls * 75;
+            dustQuota -= dustPulls;
+            remaining += dustPulls;
+            recycled += dustPulls;
+          }
+        }
+
+        return {
+          success: false,
+          upAt: 0,
+          pulls: pulls,
+          recycled: recycled,
+          fiveCount: fiveCount,
+          offBannerFive: offBannerFive
+        };
+      }
+
+      function createPredictionStore(count) {
+        return {
+          count: count,
+          success: new Uint8Array(count),
+          upAt: new Uint16Array(count),
+          pulls: new Uint16Array(count),
+          recycled: new Uint16Array(count),
+          fiveCount: new Uint8Array(count),
+          offBannerFive:
+            new Uint8Array(count)
+        };
+      }
+
+      function storePredictionResult(
+        store,
+        index,
+        result
+      ) {
+        store.success[index] =
+          result.success ? 1 : 0;
+
+        store.upAt[index] = result.upAt;
+        store.pulls[index] = result.pulls;
+        store.recycled[index] =
+          result.recycled;
+
+        store.fiveCount[index] =
+          result.fiveCount;
+
+        store.offBannerFive[index] =
+          result.offBannerFive;
+      }
+
+      function histogramMedian(
+        histogram,
+        count
+      ) {
+        if (!count) {
+          return 0;
+        }
+
+        var lowerTarget =
+          Math.floor((count + 1) / 2);
+
+        var upperTarget =
+          Math.floor(count / 2) + 1;
+
+        var cumulative = 0;
+        var lower = 0;
+        var upper = 0;
+
+        for (
+          var value = 1;
+          value < histogram.length;
+          value += 1
+        ) {
+          cumulative += histogram[value];
+
+          if (
+            !lower &&
+            cumulative >= lowerTarget
+          ) {
+            lower = value;
+          }
+
+          if (cumulative >= upperTarget) {
+            upper = value;
+            break;
+          }
+        }
+
+        return (lower + upper) / 2;
+      }
+
+      function renderPrediction(
+        store,
+        stats,
+        budget,
+        settings
+      ) {
+        var median = histogramMedian(
+          stats.histogram,
+          stats.successCount
+        );
+
+        id("prediction-success-rate").textContent =
+          (
+            Math.round(
+              stats.successCount /
+              store.count * 1000
+            ) / 10
+          ) + "%";
+
+        id("prediction-average").textContent =
+          stats.successCount
+            ? (
+                Math.round(
+                  stats.successPullTotal /
+                  stats.successCount * 10
+                ) / 10
+              ) + " 抽"
+            : "—";
+
+        id("prediction-median").textContent =
+          stats.successCount
+            ? median + " 抽"
+            : "—";
+
+        id(
+          "prediction-recycled-average"
+        ).textContent =
+          (
+            Math.round(
+              stats.recycledTotal /
+              store.count * 10
+            ) / 10
+          ) + " 抽";
+
+        lastPredictionResults = store;
+
+        lastPredictionContext = {
+          budget: clone(budget),
+          settings: clone(settings),
+          upFive: config.up5,
+          generatedAt:
+            new Date().toISOString()
+        };
+
+        id("prediction-export-note").textContent =
+          "本次共完成 " +
+          store.count +
+          " 轮模拟。页面仅保留汇总，完整逐轮结果可下载 CSV。";
+
+        id("prediction-placeholder").hidden = true;
+        id("prediction-output").hidden = false;
+
+        id("prediction-equation").textContent =
+          budget.total +
+          " 抽初始预算；逐轮消耗与回收明细可下载 CSV";
+      }
+
+      function csvValue(value) {
+        if (
+          value === null ||
+          value === undefined
+        ) {
+          value = "";
+        }
+
+        return (
+          "\"" +
+          String(value).replace(
+            /\"/g,
+            "\"\""
+          ) +
+          "\""
+        );
+      }
+
+      function recycleProfileName(value) {
+        if (value === "conservative") {
+          return "保守：四星、五星均不计星辉";
+        }
+
+        if (value === "mature") {
+          return "高命：四星角色5、武器2，歪五星10";
+        }
+
+        return "常规：每个四星按2星辉，五星不计";
+      }
+
+      function downloadPredictionCsv() {
+        if (
+          !lastPredictionResults ||
+          !lastPredictionResults.count ||
+          !lastPredictionContext
+        ) {
+          showToast(
+            "请先完成一次出金预测"
+          );
+
+          return;
+        }
+
+        var downloadButton =
+          id("prediction-download");
+
+        downloadButton.disabled = true;
+        downloadButton.textContent =
+          "正在生成 CSV…";
+
+        var store = lastPredictionResults;
+        var context = lastPredictionContext;
+        var settings = context.settings;
+
+        var header = [
+          "轮次",
+          "目标UP五星",
+          "是否获得UP",
+          "第几抽获得UP",
+          "实际消耗抽数",
+          "回收增加抽数",
+          "本轮五星数量",
+          "歪五星数量",
+          "初始可用抽数",
+          "起始五星水位",
+          "起始四星水位",
+          "下一五星状态",
+          "明光连续歪次数",
+          "纠缠之缘",
+          "原石",
+          "初始星辉",
+          "初始星尘",
+          "本月剩余星尘兑换",
+          "星辉返还估算",
+          "模拟生成时间"
+        ];
+
+        var parts = [
+          "\ufeff" +
+          header.map(csvValue).join(",") +
+          "\r\n"
+        ];
+
+        var index = 0;
+
+        function finishCsv() {
+          try {
+            var blob = new Blob(
+              parts,
+              {
+                type:
+                  "text/csv;charset=utf-8"
+              }
+            );
+
+            var objectUrl =
+              URL.createObjectURL(blob);
+
+            var link =
+              document.createElement("a");
+
+            link.href = objectUrl;
+            link.download =
+              "UP五星预测明细_" +
+              context.generatedAt
+                .replace(/[:.]/g, "-") +
+              ".csv";
+
+            document.body.append(link);
+            link.click();
+            link.remove();
+
+            window.setTimeout(
+              function () {
+                URL.revokeObjectURL(
+                  objectUrl
+                );
+              },
+              1000
+            );
+
+            showToast(
+              "CSV 已生成，共 " +
+              store.count +
+              " 条明细"
+            );
+          } catch (error) {
+            showToast(
+              "CSV 生成失败，请减少模拟次数后重试"
+            );
+          }
+
+          parts = null;
+          downloadButton.disabled = false;
+          downloadButton.textContent =
+            "下载详细结果 CSV";
+        }
+
+        function buildCsvChunk() {
+          var chunk = [];
+          var started =
+            window.performance &&
+            window.performance.now
+              ? window.performance.now()
+              : Date.now();
+
+          while (index < store.count) {
+            var success =
+              store.success[index] === 1;
+
+            chunk.push(
+              [
+                index + 1,
+                context.upFive,
+                success ? "是" : "否",
+                success
+                  ? store.upAt[index]
+                  : "",
+                store.pulls[index],
+                store.recycled[index],
+                store.fiveCount[index],
+                store.offBannerFive[index],
+                context.budget.total,
+                settings.fivePity,
+                settings.fourPity,
+                settings.guaranteed5
+                  ? "大保底"
+                  : "小保底",
+                settings.radianceLosses,
+                settings.fates,
+                settings.primogems,
+                settings.starglitter,
+                settings.stardust,
+                settings.dustQuota,
+                recycleProfileName(
+                  settings.recycleProfile
+                ),
+                context.generatedAt
+              ]
+                .map(csvValue)
+                .join(",")
+            );
+
+            index += 1;
+
+            var now =
+              window.performance &&
+              window.performance.now
+                ? window.performance.now()
+                : Date.now();
+
+            if (
+              chunk.length >= 1000 ||
+              now - started >= 12
+            ) {
+              break;
+            }
+          }
+
+          parts.push(
+            chunk.join("\r\n") + "\r\n"
+          );
+
+          downloadButton.textContent =
+            "生成 CSV " +
+            Math.floor(
+              index / store.count * 100
+            ) +
+            "%";
+
+          if (index < store.count) {
+            window.setTimeout(
+              buildCsvChunk,
+              0
+            );
+          } else {
+            finishCsv();
+          }
+        }
+
+        window.setTimeout(buildCsvChunk, 0);
+      }
+
+      function runPrediction() {
+        if (predictionRunning) {
+          return;
+        }
+
+        var settings =
+          getPredictionSettings();
+
+        var budget =
+          calculateInitialBudget(settings);
+
+        if (!budget.total) {
+          showToast(
+            "当前资源不足 1 抽，请先填写纠缠之缘、原石、星辉或星尘"
+          );
+
+          return;
+        }
+
+        var runButton =
+          id("prediction-run");
+
+        var progress =
+          id("prediction-run-progress");
+
+        var status =
+          id("prediction-run-status");
+
+        var downloadButton =
+          id("prediction-download");
+
+        predictionRunning = true;
+        runButton.disabled = true;
+        downloadButton.disabled = true;
+        runButton.textContent = "模拟中 0%";
+        progress.hidden = false;
+        progress.value = 0;
+        status.textContent =
+          "正在分批计算，期间页面仍可正常响应";
+
+        var store = createPredictionStore(
+          settings.runs
+        );
+
+        var stats = {
+          successCount: 0,
+          successPullTotal: 0,
+          recycledTotal: 0,
+          histogram: new Uint32Array(5001)
+        };
+
+        var random = createPredictionRandom();
+        var index = 0;
+        var lastPercent = -1;
+
+        function finishPrediction() {
+          renderPrediction(
+            store,
+            stats,
+            budget,
+            settings
+          );
+
+          predictionRunning = false;
+          runButton.disabled = false;
+          downloadButton.disabled = false;
+          runButton.textContent =
+            "重新独立模拟";
+          progress.value = 100;
+          status.textContent =
+            "已完成 " +
+            settings.runs +
+            " 轮独立模拟";
+
+          window.setTimeout(
+            function () {
+              if (!predictionRunning) {
+                progress.hidden = true;
+              }
+            },
+            800
+          );
+        }
+
+        function processPredictionChunk() {
+          try {
+            var started =
+              window.performance &&
+              window.performance.now
+                ? window.performance.now()
+                : Date.now();
+
+            var processed = 0;
+
+            while (index < settings.runs) {
+              var result =
+                simulatePredictionRun(
+                  settings,
+                  budget,
+                  random
+                );
+
+              storePredictionResult(
+                store,
+                index,
+                result
+              );
+
+              stats.recycledTotal +=
+                result.recycled;
+
+              if (result.success) {
+                stats.successCount += 1;
+                stats.successPullTotal +=
+                  result.upAt;
+
+                stats.histogram[
+                  result.upAt
+                ] += 1;
+              }
+
+              index += 1;
+              processed += 1;
+
+              var now =
+                window.performance &&
+                window.performance.now
+                  ? window.performance.now()
+                  : Date.now();
+
+              if (
+                processed >= 1200 ||
+                (
+                  processed >= 40 &&
+                  now - started >= 12
+                )
+              ) {
+                break;
+              }
+            }
+
+            var percent = Math.floor(
+              index / settings.runs * 100
+            );
+
+            if (percent !== lastPercent) {
+              lastPercent = percent;
+              progress.value = percent;
+              runButton.textContent =
+                "模拟中 " + percent + "%";
+            }
+
+            if (index < settings.runs) {
+              window.setTimeout(
+                processPredictionChunk,
+                0
+              );
+            } else {
+              finishPrediction();
+            }
+          } catch (error) {
+            predictionRunning = false;
+            runButton.disabled = false;
+            downloadButton.disabled = false;
+            runButton.textContent =
+              "重新独立模拟";
+            progress.hidden = true;
+            status.textContent = "";
+            showToast(
+              "模拟未能完成，请降低轮数后重试"
+            );
+          }
+        }
+
+        window.setTimeout(
+          processPredictionChunk,
+          0
+        );
+      }
+
+      function populateSelect(
+        select,
+        values
+      ) {
+        select.replaceChildren();
+
+        values.forEach(
+          function (value) {
+            var option =
+              document.createElement(
+                "option"
+              );
+
+            option.value = value;
+            option.textContent = value;
+
+            select.append(option);
+          }
+        );
+      }
+
+      function setMultipleValue(
+        select,
+        values
+      ) {
+        Array.prototype.forEach.call(
+          select.options,
+          function (option) {
+            option.selected =
+              values.indexOf(
+                option.value
+              ) !== -1;
+          }
+        );
+      }
+
+      function getMultipleValue(select) {
+        return Array.prototype.map.call(
+          select.selectedOptions,
+          function (option) {
+            return option.value;
+          }
+        );
+      }
+
+      function populateSettings(source) {
+        source = source || catalogs;
+
+        populateSelect(
+          id("up-five-select"),
+          source.limitedFive
+        );
+
+        populateSelect(
+          id("up-four-1"),
+          source.fourCharacters
+        );
+
+        populateSelect(
+          id("up-four-2"),
+          source.fourCharacters
+        );
+
+        populateSelect(
+          id("up-four-3"),
+          source.fourCharacters
+        );
+
+        populateSelect(
+          id("standard-five-select"),
+          source.standardFive
+        );
+
+        populateSelect(
+          id("four-character-select"),
+          source.fourCharacters
+        );
+
+        populateSelect(
+          id("four-weapon-select"),
+          source.fourWeapons
+        );
+
+        populateSelect(
+          id("three-weapon-select"),
+          source.threeWeapons
+        );
+      }
+
+      function syncSettings() {
+        settingsDraftCatalogs =
+          clone(catalogs);
+
+        settingsDraftElements =
+          clone(elementMap);
+
+        populateSettings(
+          settingsDraftCatalogs
+        );
+
+        id("up-five-select").value =
+          config.up5;
+
+        id("up-four-1").value =
+          config.up4[0];
+
+        id("up-four-2").value =
+          config.up4[1];
+
+        id("up-four-3").value =
+          config.up4[2];
+
+        setMultipleValue(
+          id("standard-five-select"),
+          config.standard5
+        );
+
+        setMultipleValue(
+          id("four-character-select"),
+          config.fourPool
+        );
+
+        setMultipleValue(
+          id("four-weapon-select"),
+          config.fourWeapons
+        );
+
+        setMultipleValue(
+          id("three-weapon-select"),
+          config.threeWeapons
+        );
+
+        renderCatalogManager();
+      }
+
+      function captureSettingsSelection() {
+        return {
+          up5: id("up-five-select").value,
+          up4: [
+            id("up-four-1").value,
+            id("up-four-2").value,
+            id("up-four-3").value
+          ],
+          standard5: getMultipleValue(
+            id("standard-five-select")
+          ),
+          fourPool: getMultipleValue(
+            id("four-character-select")
+          ),
+          fourWeapons: getMultipleValue(
+            id("four-weapon-select")
+          ),
+          threeWeapons: getMultipleValue(
+            id("three-weapon-select")
+          )
+        };
+      }
+
+      function setSingleValue(
+        select,
+        preferred
+      ) {
+        select.value = preferred;
+
+        if (!select.value && select.options.length) {
+          select.selectedIndex = 0;
+        }
+      }
+
+      function setPoolValue(
+        select,
+        preferred
+      ) {
+        var valid = preferred.filter(
+          function (value) {
+            return Array.prototype.some.call(
+              select.options,
+              function (option) {
+                return option.value === value;
+              }
+            );
+          }
+        );
+
+        if (!valid.length) {
+          valid = Array.prototype.map.call(
+            select.options,
+            function (option) {
+              return option.value;
+            }
+          );
+        }
+
+        setMultipleValue(select, valid);
+      }
+
+      function refreshSettingsOptions(
+        preserved
+      ) {
+        populateSettings(
+          settingsDraftCatalogs
+        );
+
+        setSingleValue(
+          id("up-five-select"),
+          preserved.up5
+        );
+
+        var chosen = [];
+
+        [
+          id("up-four-1"),
+          id("up-four-2"),
+          id("up-four-3")
+        ].forEach(function (select, index) {
+          var preferred =
+            preserved.up4[index];
+
+          var preferredAvailable =
+            Array.prototype.some.call(
+              select.options,
+              function (option) {
+                return (
+                  option.value === preferred
+                );
+              }
+            );
+
+          if (
+            preferredAvailable &&
+            chosen.indexOf(preferred) === -1
+          ) {
+            select.value = preferred;
+          } else {
+            var replacement =
+              settingsDraftCatalogs
+                .fourCharacters
+                .filter(function (value) {
+                  return (
+                    chosen.indexOf(value) === -1
+                  );
+                })[0];
+
+            select.value = replacement || "";
+          }
+
+          chosen.push(select.value);
+        });
+
+        setPoolValue(
+          id("standard-five-select"),
+          preserved.standard5
+        );
+
+        setPoolValue(
+          id("four-character-select"),
+          preserved.fourPool
+        );
+
+        setPoolValue(
+          id("four-weapon-select"),
+          preserved.fourWeapons
+        );
+
+        setPoolValue(
+          id("three-weapon-select"),
+          preserved.threeWeapons
+        );
+      }
+
+      function renderCatalogManager() {
+        if (!settingsDraftCatalogs) {
+          return;
+        }
+
+        var category =
+          id("catalog-manager-category")
+            .value;
+
+        var values =
+          settingsDraftCatalogs[category];
+
+        populateSelect(
+          id("catalog-manager-list"),
+          values
+        );
+
+        var isCharacter =
+          CHARACTER_CATALOGS.indexOf(
+            category
+          ) !== -1;
+
+        id("catalog-item-element").hidden =
+          !isCharacter;
+
+        id("catalog-manager-note").textContent =
+          CATALOG_LABELS[category] +
+          "现有 " +
+          values.length +
+          " 项。" +
+          (
+            isCharacter
+              ? "添加或更新角色时请选择元素属性。"
+              : "武器条目不需要元素属性。"
+          );
+      }
+
+      function syncManagerSelectedItem() {
+        var category =
+          id("catalog-manager-category")
+            .value;
+
+        var selected = getMultipleValue(
+          id("catalog-manager-list")
+        );
+
+        if (selected.length !== 1) {
+          return;
+        }
+
+        id("catalog-item-name").value =
+          selected[0];
+
+        if (
+          CHARACTER_CATALOGS.indexOf(
+            category
+          ) !== -1
+        ) {
+          id("catalog-item-element").value =
+            settingsDraftElements[
+              selected[0]
+            ] || "风";
+        }
+      }
+
+      function addCatalogItem() {
+        var category =
+          id("catalog-manager-category")
+            .value;
+
+        var name = migrateName(
+          id("catalog-item-name")
+            .value.trim()
+        );
+
+        if (!name) {
+          showToast("请输入角色或武器名称");
+          return;
+        }
+
+        var isCharacter =
+          CHARACTER_CATALOGS.indexOf(
+            category
+          ) !== -1;
+
+        if (isCharacter) {
+          var conflictingCategory =
+            CHARACTER_CATALOGS.filter(
+              function (key) {
+                return (
+                  key !== category &&
+                  settingsDraftCatalogs[key]
+                    .indexOf(name) !== -1
+                );
+              }
+            )[0];
+
+          if (conflictingCategory) {
+            showToast(
+              name +
+              "已存在于“" +
+              CATALOG_LABELS[
+                conflictingCategory
+              ] +
+              "”，请先从原分类删除"
+            );
+
+            return;
+          }
+
+          settingsDraftElements[name] =
+            id("catalog-item-element").value;
+        }
+
+        var exists =
+          settingsDraftCatalogs[category]
+            .indexOf(name) !== -1;
+
+        if (!exists) {
+          settingsDraftCatalogs[category]
+            .push(name);
+        }
+
+        var preserved =
+          captureSettingsSelection();
+
+        refreshSettingsOptions(preserved);
+        renderCatalogManager();
+        id("catalog-item-name").value = "";
+
+        showToast(
+          exists
+            ? isCharacter
+              ? "条目的元素属性已更新"
+              : "该武器条目已存在"
+            : "已添加到" +
+              CATALOG_LABELS[category]
+        );
+      }
+
+      function deleteCatalogItems() {
+        var category =
+          id("catalog-manager-category")
+            .value;
+
+        var selected = getMultipleValue(
+          id("catalog-manager-list")
+        );
+
+        if (!selected.length) {
+          showToast("请先选择要删除的条目");
+          return;
+        }
+
+        var minimum =
+          category === "fourCharacters"
+            ? 3
+            : 1;
+
+        if (
+          settingsDraftCatalogs[category]
+            .length - selected.length <
+          minimum
+        ) {
+          showToast(
+            category === "fourCharacters"
+              ? "四星角色至少保留 3 名"
+              : "每个分类至少保留 1 项"
+          );
+
+          return;
+        }
+
+        var preserved =
+          captureSettingsSelection();
+
+        settingsDraftCatalogs[category] =
+          settingsDraftCatalogs[category]
+            .filter(function (value) {
+              return selected.indexOf(value) === -1;
+            });
+
+        selected.forEach(function (name) {
+          var stillUsed =
+            CHARACTER_CATALOGS.some(
+              function (key) {
+                return (
+                  settingsDraftCatalogs[key]
+                    .indexOf(name) !== -1
+                );
+              }
+            );
+
+          if (!stillUsed) {
+            delete settingsDraftElements[name];
+          }
+        });
+
+        refreshSettingsOptions(preserved);
+        renderCatalogManager();
+        id("catalog-item-name").value = "";
+        showToast("已删除所选条目");
+      }
+
+      function restoreCatalogCategory() {
+        var category =
+          id("catalog-manager-category")
+            .value;
+
+        var preserved =
+          captureSettingsSelection();
+
+        settingsDraftCatalogs[category] =
+          DEFAULT_CATALOGS[category].slice();
+
+        if (
+          category === "limitedFive" ||
+          category === "standardFive"
+        ) {
+          var other =
+            category === "limitedFive"
+              ? "standardFive"
+              : "limitedFive";
+
+          settingsDraftCatalogs[category] =
+            settingsDraftCatalogs[category]
+              .filter(function (name) {
+                return (
+                  settingsDraftCatalogs[other]
+                    .indexOf(name) === -1
+                );
+              });
+        }
+
+        Object.keys(DEFAULT_ELEMENTS)
+          .forEach(function (name) {
+            settingsDraftElements[name] =
+              DEFAULT_ELEMENTS[name];
+          });
+
+        refreshSettingsOptions(preserved);
+        renderCatalogManager();
+        showToast("已恢复该分类默认条目");
+      }
+
+      function saveSettings() {
+        var up4 = [
+          id("up-four-1").value,
+          id("up-four-2").value,
+          id("up-four-3").value
+        ];
+
+        var standard5 =
+          getMultipleValue(
+            id("standard-five-select")
+          );
+
+        var fourPool =
+          getMultipleValue(
+            id("four-character-select")
+          );
+
+        var fourWeapons =
+          getMultipleValue(
+            id("four-weapon-select")
+          );
+
+        var threeWeapons =
+          getMultipleValue(
+            id("three-weapon-select")
+          );
+
+        if (
+          unique(up4).length !== 3
+        ) {
+          showToast(
+            "三名四星 UP 角色不能重复"
+          );
+
+          return;
+        }
+
+        if (
+          !standard5.length ||
+          !fourPool.length ||
+          !fourWeapons.length ||
+          !threeWeapons.length
+        ) {
+          showToast(
+            "常驻五星、四星角色、四星武器和三星武器池均不可为空"
+          );
+
+          return;
+        }
+
+        catalogs = sanitizeCatalogs(
+          settingsDraftCatalogs
+        );
+
+        elementMap = sanitizeElements(
+          settingsDraftElements
+        );
+
+        config = sanitizeConfig({
+          up5:
+            id("up-five-select").value,
+
+          up4: up4,
+
+          standard5: standard5,
+
+          fourPool: fourPool,
+
+          fourWeapons: fourWeapons,
+
+          threeWeapons: threeWeapons
+        });
+
+        saveData();
+        renderState();
+        populateSettings(catalogs);
+        closeModal("settings-modal");
+        showToast("卡池配置已保存");
+      }
+
+      function openModal(modalId) {
+        var modal = id(modalId);
+
+        modal.hidden = false;
+
+        document.body.style.overflow =
+          "hidden";
+
+        var focusTarget =
+          modal.querySelector(
+            "input, select, button"
+          );
+
+        if (focusTarget) {
+          focusTarget.focus();
+        }
+      }
+
+      function closeModal(modalId) {
+        id(modalId).hidden = true;
+
+        if (modalId === "settings-modal") {
+          settingsDraftCatalogs = null;
+          settingsDraftElements = null;
+        }
+
+        if (
+          id("settings-modal").hidden &&
+          id("rules-modal").hidden &&
+          id("guide-modal").hidden
+        ) {
+          document.body.style.overflow =
+            "";
+        }
+      }
+
+      function switchMainView(viewName) {
+        var showPrediction =
+          viewName === "prediction";
+
+        id("wish-view").hidden =
+          showPrediction;
+
+        id("prediction-view").hidden =
+          !showPrediction;
+
+        Array.prototype.forEach.call(
+          document.querySelectorAll(
+            "[data-main-view]"
+          ),
+          function (tab) {
+            tab.setAttribute(
+              "aria-selected",
+              String(
+                tab.getAttribute(
+                  "data-main-view"
+                ) === viewName
+              )
+            );
+          }
+        );
+
+        if (showPrediction) {
+          syncPredictionState();
+        }
+
+        window.scrollTo(0, 0);
+      }
+
+      function showToast(message) {
+        var toast = id("toast");
+
+        toast.textContent = message;
+        toast.hidden = false;
+
+        window.clearTimeout(
+          toastTimer
+        );
+
+        toastTimer =
+          window.setTimeout(
+            function () {
+              toast.hidden = true;
+            },
+            2400
+          );
+      }
+
+      function resetRecord() {
+        if (
+          !window.confirm(
+            "确认清空五星、四星、大小保底与捕获明光记录？卡池配置会保留。"
+          )
+        ) {
+          return;
+        }
+
+        wishState =
+          clone(DEFAULT_STATE);
+
+        saveData();
+        renderState();
+        renderEmpty();
+        closeModal("settings-modal");
+        showToast("祈愿记录已重置");
+      }
+
+      function bindEvents() {
+        id("single-wish")
+          .addEventListener(
+            "click",
+            function () {
+              makeWishes(1);
+            }
+          );
+
+        id("ten-wish")
+          .addEventListener(
+            "click",
+            function () {
+              makeWishes(10);
+            }
+          );
+
+        id("settings-open")
+          .addEventListener(
+            "click",
+            function () {
+              syncSettings();
+              openModal(
+                "settings-modal"
+              );
+            }
+          );
+
+        id("guide-open")
+          .addEventListener(
+            "click",
+            function () {
+              openModal(
+                "guide-modal"
+              );
+            }
+          );
+
+        Array.prototype.forEach.call(
+          document.querySelectorAll(
+            "[data-main-view]"
+          ),
+          function (tab) {
+            tab.addEventListener(
+              "click",
+              function () {
+                switchMainView(
+                  tab.getAttribute(
+                    "data-main-view"
+                  )
+                );
+              }
+            );
+          }
+        );
+
+        id("rules-open")
+          .addEventListener(
+            "click",
+            function () {
+              openModal(
+                "rules-modal"
+              );
+            }
+          );
+
+        id("settings-save")
+          .addEventListener(
+            "click",
+            saveSettings
+          );
+
+        id("prediction-run")
+          .addEventListener(
+            "click",
+            runPrediction
+          );
+
+        id("prediction-download")
+          .addEventListener(
+            "click",
+            downloadPredictionCsv
+          );
+
+        id("prediction-view")
+          .addEventListener(
+            "input",
+            updatePredictionBudget
+          );
+
+        id("prediction-view")
+          .addEventListener(
+            "change",
+            updatePredictionBudget
+          );
+
+        id("catalog-manager-category")
+          .addEventListener(
+            "change",
+            function () {
+              id("catalog-item-name").value =
+                "";
+              renderCatalogManager();
+            }
+          );
+
+        id("catalog-manager-list")
+          .addEventListener(
+            "change",
+            syncManagerSelectedItem
+          );
+
+        id("catalog-add")
+          .addEventListener(
+            "click",
+            addCatalogItem
+          );
+
+        id("catalog-delete")
+          .addEventListener(
+            "click",
+            deleteCatalogItems
+          );
+
+        id("catalog-restore")
+          .addEventListener(
+            "click",
+            restoreCatalogCategory
+          );
+
+        id("catalog-item-name")
+          .addEventListener(
+            "keydown",
+            function (event) {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addCatalogItem();
+              }
+            }
+          );
+
+        id("reset-record")
+          .addEventListener(
+            "click",
+            resetRecord
+          );
+
+        document.addEventListener(
+          "click",
+          function (event) {
+            var closeTarget =
+              event.target.closest(
+                "[data-close]"
+              );
+
+            if (closeTarget) {
+              closeModal(
+                closeTarget.getAttribute(
+                  "data-close"
+                )
+              );
+            }
+
+            var resultCard =
+              event.target.closest(
+                ".result-card"
+              );
+
+            var resultCards =
+              id("result-stage")
+                .querySelectorAll(
+                  ".result-card"
+                );
+
+            Array.prototype.forEach.call(
+              resultCards,
+              function (card) {
+                if (card !== resultCard) {
+                  card.classList.remove(
+                    "is-active"
+                  );
+                }
+              }
+            );
+
+            if (resultCard) {
+              resultCard.classList.toggle(
+                "is-active"
+              );
+            }
+
+            if (
+              event.target.classList.contains(
+                "modal-backdrop"
+              )
+            ) {
+              closeModal(
+                event.target.id
+              );
+            }
+          }
+        );
+
+        document.addEventListener(
+          "keydown",
+          function (event) {
+            if (
+              event.key !== "Escape"
+            ) {
+              return;
+            }
+
+            if (
+              !id("settings-modal").hidden
+            ) {
+              closeModal(
+                "settings-modal"
+              );
+            }
+
+            if (
+              !id("rules-modal").hidden
+            ) {
+              closeModal(
+                "rules-modal"
+              );
+            }
+
+            if (
+              !id("guide-modal").hidden
+            ) {
+              closeModal(
+                "guide-modal"
+              );
+            }
+          }
+        );
+      }
+
+      loadData();
+      populateSettings(catalogs);
+      bindEvents();
+      renderState();
+      renderEmpty();
+    }());
+  </script>
+</body>
+</html>
