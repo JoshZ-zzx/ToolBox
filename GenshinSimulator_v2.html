@@ -248,6 +248,206 @@
       transform: translateY(-1px);
     }
 
+    .featured-roster {
+      width: min(920px, 100%);
+      position: relative;
+      z-index: 5;
+      display: grid;
+      grid-template-columns:
+        minmax(250px, 1.15fr)
+        minmax(420px, 1.85fr);
+      gap: 9px;
+      margin: 13px auto 0;
+    }
+
+    .featured-five-card,
+    .featured-four-card {
+      min-width: 0;
+      position: relative;
+      overflow: hidden;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, .68);
+      box-shadow:
+        0 9px 28px rgba(var(--theme-rgb), .09),
+        inset 0 1px rgba(255, 255, 255, .8);
+      backdrop-filter: blur(14px);
+    }
+
+    .featured-five-card {
+      min-height: 82px;
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 16px;
+      border:
+        1px solid rgba(var(--theme-rgb), .42);
+      border-left:
+        5px solid var(--theme-primary);
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255, 255, 255, .76),
+          rgba(var(--theme-rgb), .3)
+        );
+      box-shadow:
+        0 10px 30px rgba(var(--theme-rgb), .16),
+        inset 0 1px rgba(255, 255, 255, .9);
+    }
+
+    .featured-five-card::before,
+    .featured-four-card::before {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+    }
+
+    .featured-five-card::before {
+      width: 155px;
+      height: 155px;
+      right: -38px;
+      top: -76px;
+      background:
+        radial-gradient(
+          circle,
+          rgba(255, 255, 255, .9),
+          rgba(var(--theme-rgb), .28) 44%,
+          transparent 70%
+        );
+    }
+
+    .featured-five-copy,
+    .featured-five-meta,
+    .featured-four-card > * {
+      position: relative;
+    }
+
+    .featured-label {
+      display: block;
+      color: #8b6a31;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .17em;
+    }
+
+    .featured-five-card strong {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: #173e48;
+      font:
+        600 22px Georgia,
+        "Songti SC",
+        serif;
+      letter-spacing: .04em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .featured-five-meta {
+      display: grid;
+      justify-items: end;
+      gap: 5px;
+    }
+
+    .five-stars {
+      color: #d39729;
+      font-size: 10px;
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .element-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border:
+        1px solid var(--theme-deep);
+      border-radius: 99px;
+      background: var(--theme-deep);
+      color: #fff;
+      box-shadow:
+        0 4px 12px rgba(var(--theme-rgb), .24);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      white-space: nowrap;
+    }
+
+    .featured-four-group {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .featured-four-card {
+      --card-primary: #269a8a;
+      --card-deep: #17695f;
+      --card-rgb: 38, 154, 138;
+      min-height: 82px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 11px 12px;
+      border:
+        1px solid rgba(var(--card-rgb), .42);
+      border-left:
+        4px solid var(--card-primary);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, .76),
+          rgba(var(--card-rgb), .29)
+        );
+      box-shadow:
+        0 9px 26px rgba(var(--card-rgb), .16),
+        inset 0 1px rgba(255, 255, 255, .9);
+    }
+
+    .featured-four-card::before {
+      width: 90px;
+      height: 90px;
+      right: -30px;
+      top: -38px;
+      background:
+        radial-gradient(
+          circle,
+          rgba(var(--card-rgb), .35),
+          transparent 70%
+        );
+    }
+
+    .featured-four-element {
+      align-self: flex-start;
+      padding: 2px 6px;
+      border-radius: 99px;
+      background: rgba(var(--card-rgb), .16);
+      color: var(--card-deep);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .1em;
+    }
+
+    .featured-four-card strong {
+      display: block;
+      margin: 3px 0 2px;
+      overflow: hidden;
+      color: #25434a;
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .featured-four-stars {
+      color: #9875b4;
+      font-size: 8px;
+      letter-spacing: 1px;
+    }
+
     .mode-tabs {
       width: min(620px, 100%);
       position: relative;
@@ -255,7 +455,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 5px;
-      margin: 12px auto 0;
+      margin: 9px auto 0;
       padding: 5px;
       border:
         1px solid rgba(var(--theme-rgb), .18);
@@ -339,120 +539,16 @@
       transform: scaleX(-1);
     }
 
-    h1 {
-      margin: 7px 0 2px;
-      color: #133b49;
-      font:
-        500 clamp(34px, 5vw, 58px) / 1.1
-        Georgia,
-        "Songti SC",
-        serif;
-      letter-spacing: .08em;
-    }
-
-    h1 em {
-      color: var(--theme-primary);
-      font-style: normal;
-      text-shadow:
-        0 5px 24px rgba(var(--theme-rgb), .28);
-    }
-
     .banner-name {
-      margin: 0;
+      margin: 6px 0 0;
       color: var(--muted);
       font-size: 12px;
       letter-spacing: .12em;
     }
 
-    .up-card {
-      width: 240px;
-      min-height: 112px;
-      position: relative;
-      margin: 17px auto 13px;
-      padding: 13px 14px 11px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, .9);
-      border-radius: 22px;
-      background:
-        linear-gradient(
-          130deg,
-          rgba(255, 255, 255, .82),
-          var(--theme-soft)
-        );
-      box-shadow:
-        0 18px 48px rgba(var(--theme-rgb), .14),
-        inset 0 0 25px #fff;
-    }
-
-    .up-card::before {
-      content: "";
-      width: 130px;
-      height: 130px;
-      position: absolute;
-      left: 55px;
-      top: -38px;
-      background:
-        radial-gradient(
-          circle,
-          #fff 0,
-          rgba(var(--theme-rgb), .18) 40%,
-          transparent 70%
-        );
-    }
-
-    .up-card > * {
-      position: relative;
-    }
-
-    .up-kicker {
-      display: block;
-      color: #ae8436;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: .2em;
-    }
-
-    .up-card strong {
-      display: block;
-      margin-top: 3px;
-      font:
-        600 25px
-        Georgia,
-        "Songti SC",
-        serif;
-      letter-spacing: .04em;
-    }
-
-    .five-stars {
-      color: #d8a642;
-      font-size: 12px;
-      letter-spacing: 3px;
-    }
-
-    .up-card small {
-      color: #749198;
-      font-size: 9px;
-    }
-
-    .element-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 5px;
-      padding: 2px 7px;
-      border:
-        1px solid rgba(var(--theme-rgb), .28);
-      border-radius: 99px;
-      background: rgba(255, 255, 255, .48);
-      color: var(--theme-primary) !important;
-      font-size: 8px !important;
-      font-weight: 700;
-      letter-spacing: .08em;
-    }
-
     .stats-panel {
       max-width: 1040px;
-      margin: 0 auto;
+      margin: 11px auto 0;
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 16px;
@@ -579,6 +675,33 @@
       margin-top: 5px;
       border: 0;
       accent-color: var(--theme-primary);
+    }
+
+    .stats-panel progress {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 999px;
+      appearance: none;
+      -webkit-appearance: none;
+      background: #dfe4e5;
+      accent-color: var(--theme-primary);
+    }
+
+    .stats-panel progress::-webkit-progress-bar {
+      border-radius: 999px;
+      background: #dfe4e5;
+    }
+
+    .stats-panel progress::-webkit-progress-value {
+      border-radius: 999px;
+      background: var(--theme-primary);
+      transition: width .25s ease;
+    }
+
+    .stats-panel progress::-moz-progress-bar {
+      border-radius: 999px;
+      background: var(--theme-primary);
+      transition: width .25s ease;
     }
 
     .result-stage {
@@ -1618,23 +1741,14 @@
         margin-top: 5px;
       }
 
+      .featured-roster {
+        grid-template-columns: 1fr;
+        gap: 7px;
+        margin-top: 10px;
+      }
+
       .mode-tabs {
         margin-top: 9px;
-      }
-
-      h1 {
-        font-size: 35px;
-        letter-spacing: .04em;
-      }
-
-      .up-card {
-        width: 215px;
-        min-height: 101px;
-        margin-top: 13px;
-      }
-
-      .up-card strong {
-        font-size: 22px;
       }
 
       .stats-grid {
@@ -1844,6 +1958,13 @@
       }
     }
 
+    @media (max-width: 680px) {
+      .featured-roster {
+        grid-template-columns: 1fr;
+        margin-top: 10px;
+      }
+    }
+
     @media (max-width: 480px) {
       .topbar {
         min-height: 46px;
@@ -1894,13 +2015,27 @@
         font-size: 10px;
       }
 
+      .featured-five-card {
+        min-height: 72px;
+        padding: 11px 13px;
+      }
+
+      .featured-five-card strong {
+        font-size: 20px;
+      }
+
+      .featured-four-card {
+        min-height: 68px;
+        padding: 9px 8px;
+      }
+
+      .featured-four-card strong {
+        font-size: 12px;
+      }
+
       .eyebrow {
         font-size: 9px;
         letter-spacing: .15em;
-      }
-
-      h1 {
-        font-size: 31px;
       }
 
       .banner-name {
@@ -2080,6 +2215,85 @@
       </div>
     </header>
 
+    <section
+      class="featured-roster"
+      aria-label="本期概率提升角色"
+    >
+      <article class="featured-five-card">
+        <div class="featured-five-copy">
+          <span class="featured-label">
+            本期五星概率 UP
+          </span>
+
+          <strong id="up-character"></strong>
+        </div>
+
+        <div class="featured-five-meta">
+          <span class="five-stars">
+            ★★★★★
+          </span>
+
+          <span
+            id="up-element-badge"
+            class="element-badge"
+          ></span>
+        </div>
+      </article>
+
+      <div
+        class="featured-four-group"
+        aria-label="本期四星概率提升角色"
+      >
+        <article
+          id="up-four-card-1"
+          class="featured-four-card"
+        >
+          <span
+            id="up-four-element-1"
+            class="featured-four-element"
+          ></span>
+
+          <strong id="up-four-name-1"></strong>
+
+          <span class="featured-four-stars">
+            ★★★★
+          </span>
+        </article>
+
+        <article
+          id="up-four-card-2"
+          class="featured-four-card"
+        >
+          <span
+            id="up-four-element-2"
+            class="featured-four-element"
+          ></span>
+
+          <strong id="up-four-name-2"></strong>
+
+          <span class="featured-four-stars">
+            ★★★★
+          </span>
+        </article>
+
+        <article
+          id="up-four-card-3"
+          class="featured-four-card"
+        >
+          <span
+            id="up-four-element-3"
+            class="featured-four-element"
+          ></span>
+
+          <strong id="up-four-name-3"></strong>
+
+          <span class="featured-four-stars">
+            ★★★★
+          </span>
+        </article>
+      </div>
+    </section>
+
     <nav
       class="mode-tabs"
       aria-label="主功能切换"
@@ -2115,36 +2329,10 @@
         <span></span>
       </div>
 
-      <h1>
-        当前祈愿 ·
-        <em id="hero-title-character"></em>
-      </h1>
-
       <p
         id="banner-name"
         class="banner-name"
       ></p>
-
-      <div class="up-card">
-        <span class="up-kicker">
-          概率 UP！
-        </span>
-
-        <strong id="up-character"></strong>
-
-        <div class="five-stars">
-          ★★★★★
-        </div>
-
-        <small>
-          限定五星角色
-        </small>
-
-        <small
-          id="up-element-badge"
-          class="element-badge"
-        ></small>
-      </div>
 
       <div class="stats-panel">
         <div class="stats-head">
@@ -3391,12 +3579,12 @@
           rgb: "185, 87, 69"
         },
         "冰": {
-          primary: "#3d91a5",
-          accent: "#83cbd5",
-          deep: "#286276",
-          soft: "#e0f1f3",
-          pale: "#f3fafb",
-          rgb: "61, 145, 165"
+          primary: "#4f7892",
+          accent: "#bfe5ef",
+          deep: "#34566c",
+          soft: "#e9f7fa",
+          pale: "#f8fdfe",
+          rgb: "126, 183, 204"
         }
       };
 
@@ -4356,19 +4544,68 @@
         }
       }
 
+      function renderFeaturedRoster() {
+        id("up-character").textContent =
+          config.up5;
+
+        config.up4.forEach(
+          function (character, index) {
+            var number = index + 1;
+
+            var element =
+              elementMap[character] || "风";
+
+            var theme =
+              ELEMENT_THEMES[element] ||
+              ELEMENT_THEMES["风"];
+
+            var card = id(
+              "up-four-card-" + number
+            );
+
+            id(
+              "up-four-name-" + number
+            ).textContent = character;
+
+            id(
+              "up-four-element-" + number
+            ).textContent =
+              element + "元素 · 四星 UP";
+
+            card.style.setProperty(
+              "--card-primary",
+              theme.primary
+            );
+
+            card.style.setProperty(
+              "--card-deep",
+              theme.deep
+            );
+
+            card.style.setProperty(
+              "--card-rgb",
+              theme.rgb
+            );
+
+            card.setAttribute(
+              "aria-label",
+              character +
+              "，" +
+              element +
+              "元素，本期四星概率提升角色"
+            );
+          }
+        );
+      }
+
       function renderState() {
         applyElementTheme();
-
-        id("hero-title-character").textContent =
-          config.up5;
+        renderFeaturedRoster();
 
         id("banner-name").textContent =
           "「" +
           config.up5 +
           "」角色活动祈愿";
-
-        id("up-character").textContent =
-          config.up5;
 
         id("five-pity").replaceChildren(
           document.createTextNode(
