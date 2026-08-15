@@ -2420,7 +2420,7 @@
               </label>
 
               <label class="field">
-                <span>明光连续歪</span>
+                <span>小保底连续歪</span>
                 <select id="prediction-radiance">
                   <option value="0">0 次</option>
                   <option value="1">1 次</option>
@@ -2495,12 +2495,12 @@
               </label>
 
               <label class="field">
-                <span>独立模拟次数(最高100000)</span>
+                <span>独立模拟次数(建议设置100000)</span>
                 <input
                   id="prediction-runs"
                   type="number"
                   min="1"
-                  max="100000"
+                  max="1000000"
                   step="1"
                   value="100000"
                   inputmode="numeric"
@@ -2535,7 +2535,7 @@
 
             <p class="prediction-assumption">
               模拟会把三星武器返还的 15 星尘、四五星返还的星辉继续兑换纠缠之缘。
-              星辉按 5:1 且不限量；星尘按 75:1，并受你填写的本月剩余 5 个兑换上限约束。
+              星辉按 5:1 且不限量；星尘按 75:1，并受你填写的本月剩余兑换上限约束。
             </p>
 
             <button
@@ -3226,10 +3226,10 @@
 
       var DEFAULT_ELEMENTS = {
         "奥黛塔": "冰",
-        "桑多涅": "岩",
-        "洛恩": "水",
-        "尼可": "风",
-        "莉奈娅": "雷",
+        "桑多涅": "冰",
+        "洛恩": "冰",
+        "尼可": "火",
+        "莉奈娅": "岩",
         "法尔伽": "风",
         "兹白": "岩",
         "哥伦比娅": "水",
@@ -4777,7 +4777,7 @@
           runs: predictionNumber(
             "prediction-runs",
             1,
-            100000
+            1000000
           ),
 
           recycleProfile:
