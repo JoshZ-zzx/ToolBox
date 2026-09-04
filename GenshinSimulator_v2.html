@@ -1215,6 +1215,89 @@
       grid-template-columns: 1fr 1fr;
     }
 
+    .settings-modal {
+      width: min(780px, 100%);
+    }
+
+    .settings-section,
+    .up-reset-row {
+      grid-column: 1 / -1;
+      padding: 14px;
+      border:
+        1px solid rgba(var(--theme-rgb), .2);
+      border-radius: 15px;
+      background:
+        linear-gradient(
+          145deg,
+          #fff,
+          var(--theme-pale)
+        );
+    }
+
+    .up-reset-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .up-reset-row b,
+    .settings-section-head b,
+    .settings-section summary b {
+      display: block;
+      color: #285d67;
+      font-size: 12px;
+    }
+
+    .up-reset-row small,
+    .settings-section-head small,
+    .settings-section summary small {
+      display: block;
+      margin-top: 3px;
+      color: #789399;
+      font-size: 9px;
+      line-height: 1.6;
+    }
+
+    .up-reset-button {
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 8px 12px;
+      border: 1px solid #bfdadd;
+      border-radius: 9px;
+      background: #fff;
+      color: #39727d;
+    }
+
+    .settings-section-head {
+      margin-bottom: 12px;
+    }
+
+    .settings-state-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    details.settings-section summary {
+      cursor: pointer;
+      list-style-position: outside;
+      margin-left: 14px;
+    }
+
+    details.settings-section[open] summary {
+      margin-bottom: 12px;
+    }
+
+    .settings-state-note {
+      grid-column: 1 / -1;
+      margin: 0;
+      color: #789399;
+      font-size: 9px;
+      line-height: 1.65;
+    }
+
     .pool-manager {
       grid-column: 1 / -1;
       padding: 14px;
@@ -1624,6 +1707,212 @@
       white-space: nowrap;
     }
 
+    .prediction-distribution {
+      margin-bottom: 14px;
+      padding: 14px;
+      border: 1px solid #d3e7e8;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .distribution-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 11px;
+    }
+
+    .distribution-head > div > span {
+      display: block;
+      color: var(--theme-primary);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: .14em;
+    }
+
+    .distribution-head h3 {
+      margin: 3px 0 0;
+      color: #244f58;
+      font:
+        600 18px
+        Georgia,
+        "Songti SC",
+        serif;
+    }
+
+    .distribution-head p {
+      margin: 4px 0 0;
+      color: #789399;
+      font-size: 9px;
+      line-height: 1.55;
+    }
+
+    .distribution-bin-size {
+      flex: 0 0 auto;
+    }
+
+    .distribution-bin-size span {
+      display: block;
+      margin-bottom: 4px;
+      color: #789399;
+      font-size: 8px;
+    }
+
+    .distribution-bin-size select {
+      min-height: 34px;
+      padding: 6px 24px 6px 9px;
+      border: 1px solid #c7dee0;
+      border-radius: 9px;
+      background: #f9fdfc;
+      color: #285d67;
+      font-size: 9px;
+    }
+
+    .distribution-overview {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .distribution-chip {
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--theme-soft);
+      color: var(--theme-deep);
+      font-size: 8px;
+    }
+
+    .distribution-chip.failure {
+      background: #f7ebe7;
+      color: #9b5f51;
+    }
+
+    .distribution-scale {
+      margin-left: auto;
+      color: #89a0a5;
+      font-size: 8px;
+    }
+
+    .histogram-scroll {
+      width: 100%;
+      overflow-x: auto;
+      padding: 4px 1px 8px;
+      scrollbar-color: #b9d6d9 transparent;
+      scrollbar-width: thin;
+    }
+
+    .prediction-histogram {
+      min-width: max-content;
+      display: grid;
+      grid-auto-columns: 68px;
+      grid-auto-flow: column;
+      align-items: end;
+      gap: 3px;
+    }
+
+    .prediction-histogram.is-empty {
+      min-width: 100%;
+      display: block;
+    }
+
+    .histogram-column {
+      display: grid;
+      grid-template-rows: 38px 172px 23px;
+      min-width: 0;
+      outline: none;
+    }
+
+    .histogram-stat {
+      align-self: end;
+      padding-bottom: 5px;
+      text-align: center;
+    }
+
+    .histogram-stat strong,
+    .histogram-stat small {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .histogram-stat strong {
+      color: #285d67;
+      font-size: 9px;
+    }
+
+    .histogram-stat small {
+      margin-top: 1px;
+      color: #7d999e;
+      font-size: 7px;
+    }
+
+    .histogram-track {
+      display: flex;
+      align-items: flex-end;
+      padding: 0 2px;
+      border-bottom: 1px solid #a8cbcf;
+      background:
+        repeating-linear-gradient(
+          to top,
+          transparent 0,
+          transparent 42px,
+          rgba(var(--theme-rgb), .09) 43px
+        );
+    }
+
+    .histogram-bar {
+      width: 100%;
+      min-height: 0;
+      border-radius: 6px 6px 2px 2px;
+      background:
+        linear-gradient(
+          to top,
+          var(--theme-primary),
+          var(--theme-accent)
+        );
+      box-shadow:
+        0 5px 14px rgba(var(--theme-rgb), .18);
+      opacity: .88;
+      transform-origin: bottom;
+      transition:
+        opacity .16s ease,
+        transform .16s ease;
+    }
+
+    .histogram-column:hover .histogram-bar,
+    .histogram-column:focus-visible .histogram-bar {
+      opacity: 1;
+      transform: scaleX(1.06);
+    }
+
+    .histogram-range {
+      align-self: end;
+      overflow: hidden;
+      padding-top: 6px;
+      color: #6f8d93;
+      font-size: 8px;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .histogram-empty {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      border: 1px dashed #c9dfe1;
+      border-radius: 10px;
+      color: #789399;
+      font-size: 10px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
     .prediction-actions {
       display: flex;
       align-items: center;
@@ -1910,6 +2199,11 @@
         grid-template-columns: 1fr;
       }
 
+      .settings-section,
+      .up-reset-row {
+        grid-column: auto;
+      }
+
       .pool-manager {
         grid-column: auto;
       }
@@ -1947,6 +2241,20 @@
       .prediction-actions {
         align-items: stretch;
         flex-direction: column;
+      }
+
+      .distribution-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .distribution-bin-size select {
+        width: 100%;
+      }
+
+      .distribution-scale {
+        width: 100%;
+        margin-left: 0;
       }
 
       .prediction-download {
@@ -2128,8 +2436,21 @@
         grid-template-columns: 1fr;
       }
 
+      .settings-state-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
       .pool-manager-list {
         min-height: 138px;
+      }
+
+      .up-reset-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .up-reset-button {
+        width: 100%;
       }
 
       .modal-foot {
@@ -2145,6 +2466,12 @@
       .secondary-button,
       .primary-button {
         flex: 1;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .settings-state-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -2618,6 +2945,14 @@
               </label>
 
               <label class="field">
+                <span>下一四星状态</span>
+                <select id="prediction-four-guarantee">
+                  <option value="small">小保底</option>
+                  <option value="big">大保底</option>
+                </select>
+              </label>
+
+              <label class="field">
                 <span>纠缠之缘</span>
                 <input
                   id="prediction-fates"
@@ -2781,6 +3116,61 @@
                 </article>
               </div>
 
+              <section
+                class="prediction-distribution"
+                aria-labelledby="prediction-distribution-title"
+              >
+                <div class="distribution-head">
+                  <div>
+                    <span>频率分布</span>
+                    <h3 id="prediction-distribution-title">
+                      UP 五星到手抽数
+                    </h3>
+                    <p>
+                      每根柱表示该抽数区间内获得当期 UP 的轮次；百分比以全部模拟轮次为分母。
+                    </p>
+                  </div>
+
+                  <label class="distribution-bin-size">
+                    <span>抽数区间</span>
+                    <select id="prediction-bin-size">
+                      <option value="5">每 5 抽</option>
+                      <option value="10" selected>每 10 抽</option>
+                      <option value="20">每 20 抽</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="distribution-overview">
+                  <span
+                    id="prediction-distribution-success"
+                    class="distribution-chip"
+                  ></span>
+
+                  <span
+                    id="prediction-distribution-failure"
+                    class="distribution-chip failure"
+                  ></span>
+
+                  <span
+                    id="prediction-distribution-scale"
+                    class="distribution-scale"
+                  ></span>
+                </div>
+
+                <div
+                  class="histogram-scroll"
+                  tabindex="0"
+                  aria-label="出金抽数频率分布图，可横向滚动查看全部区间"
+                >
+                  <div
+                    id="prediction-histogram"
+                    class="prediction-histogram"
+                    role="list"
+                  ></div>
+                </div>
+              </section>
+
               <div class="prediction-actions">
                 <p id="prediction-export-note">
                   完整模拟明细不会在页面中展开，可按需下载 CSV 查看。
@@ -2812,7 +3202,7 @@
     hidden
   >
     <section
-      class="modal"
+      class="modal settings-modal"
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-title"
@@ -2821,7 +3211,7 @@
         <div>
           <span>祈愿配置</span>
           <h2 id="settings-title">
-            调整卡池与列表
+            调整卡池、状态与列表
           </h2>
         </div>
 
@@ -2864,6 +3254,159 @@
             ></select>
           </div>
         </div>
+
+        <div class="up-reset-row">
+          <div>
+            <b>恢复源码中的当期 UP</b>
+            <small>
+              读取此 HTML 内设置的默认五星与四星 UP；祈愿记录及自定义列表不会清空，保存后生效。
+            </small>
+          </div>
+
+          <button
+            id="reset-up-pool"
+            class="up-reset-button"
+            type="button"
+          >
+            重置 UP 卡池
+          </button>
+        </div>
+
+        <section
+          class="settings-section"
+          aria-labelledby="wish-state-settings-title"
+        >
+          <div class="settings-section-head">
+            <b id="wish-state-settings-title">
+              当前祈愿状态
+            </b>
+            <small>
+              可从指定垫数和保底状态继续常规祈愿；保存后会同步到“资源规划与出金预测”。
+            </small>
+          </div>
+
+          <div class="settings-state-grid">
+            <label class="field">
+              <span>五星垫抽数</span>
+              <input
+                id="settings-five-pity"
+                type="number"
+                min="0"
+                max="89"
+                step="1"
+                inputmode="numeric"
+              >
+            </label>
+
+            <label class="field">
+              <span>四星垫抽数</span>
+              <input
+                id="settings-four-pity"
+                type="number"
+                min="0"
+                max="99"
+                step="1"
+                inputmode="numeric"
+              >
+            </label>
+
+            <label class="field">
+              <span>下一五星状态</span>
+              <select id="settings-guarantee-five">
+                <option value="small">小保底</option>
+                <option value="big">大保底</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>下一四星状态</span>
+              <select id="settings-guarantee-four">
+                <option value="small">小保底</option>
+                <option value="big">大保底</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>小保底连续歪</span>
+              <select id="settings-radiance-losses">
+                <option value="0">0 次</option>
+                <option value="1">1 次</option>
+                <option value="2">2 次</option>
+                <option value="3">3 次</option>
+              </select>
+            </label>
+
+            <p class="settings-state-note">
+              “下一四星状态”表示上次四星未命中当期 UP 时进入的四星大保底；五星顶掉四星时不会重置四星垫数。
+            </p>
+          </div>
+        </section>
+
+        <details class="settings-section">
+          <summary>
+            <b>累计统计数据</b>
+            <small>
+              需要完整接续旧记录时可展开填写；只想指定当前垫数时无需修改。
+            </small>
+          </summary>
+
+          <div class="settings-state-grid">
+            <label class="field">
+              <span>累计祈愿数</span>
+              <input id="settings-total" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>累计五星数</span>
+              <input id="settings-total-five" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>其中 UP 五星数</span>
+              <input id="settings-up-five-count" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>其中歪五星数</span>
+              <input id="settings-off-banner-five-count" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>累计四星数</span>
+              <input id="settings-total-four" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>累计三星数</span>
+              <input id="settings-total-three" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>五星出金水位总和</span>
+              <input id="settings-five-pity-sum" type="number" min="0" max="90000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>四星出紫水位总和</span>
+              <input id="settings-four-pity-sum" type="number" min="0" max="10000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>本轮追 UP 抽数</span>
+              <input id="settings-up-cycle-pulls" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>上次出 UP 抽数</span>
+              <input id="settings-last-up-pulls" type="number" min="0" max="1000000000" step="1" inputmode="numeric">
+            </label>
+
+            <label class="field">
+              <span>历次出 UP 抽数总和</span>
+              <input id="settings-up-pulls-sum" type="number" min="0" max="100000000000" step="1" inputmode="numeric">
+            </label>
+          </div>
+        </details>
 
         <label class="field">
           <span>
@@ -3033,7 +3576,7 @@
           class="primary-button"
           type="button"
         >
-          保存配置
+          保存全部配置
         </button>
       </footer>
     </section>
@@ -3085,14 +3628,14 @@
         <article>
           <b>资源与出金预测</b>
           <p>
-            通过顶部菜单切换。五星垫抽可对应提瓦特小助手的“角色”栏；四星垫抽是角色池距最近四星角色或武器的抽数。填写资源与模拟轮数后运行，页面显示汇总，完整逐轮结果可下载 CSV。
+            通过顶部菜单切换。五星垫抽可对应提瓦特小助手的“角色”栏；四星垫抽是角色池距最近四星角色或武器的抽数。填写资源与模拟轮数后运行，页面会同时显示汇总和出金抽数频率分布，可切换每 5、10 或 20 抽为一个区间；完整逐轮结果仍可下载 CSV。
           </p>
         </article>
 
         <article>
           <b>设置与列表管理</b>
           <p>
-            右上角齿轮可选择当期五星与四星 UP，并调整常驻五星、四星角色、四星武器、三星武器池。列表管理器允许添加、删除或恢复默认条目；自定义角色时请同时选择正确元素，页面主题会随五星 UP 元素变化。
+            右上角齿轮可选择当期五星与四星 UP、指定当前垫数与保底状态，并在需要时接续全部累计统计。点击“重置 UP 卡池”可读取源码中的最新默认 UP，不会清空祈愿记录或自定义列表。列表管理器仍可添加、删除或恢复默认条目；自定义角色时请同时选择正确元素。
           </p>
         </article>
 
@@ -3640,6 +4183,7 @@
       var toastTimer = 0;
       var lastPredictionResults = null;
       var lastPredictionContext = null;
+      var lastPredictionHistogram = null;
       var predictionRunning = false;
 
       function id(name) {
@@ -4973,7 +5517,8 @@
             "big",
 
           guaranteed4:
-            wishState.guaranteed4,
+            id("prediction-four-guarantee")
+              .value === "big",
 
           radianceLosses: predictionNumber(
             "prediction-radiance",
@@ -5100,6 +5645,11 @@
 
         id("prediction-radiance").value =
           String(wishState.radianceLosses);
+
+        id("prediction-four-guarantee").value =
+          wishState.guaranteed4
+            ? "big"
+            : "small";
 
         updatePredictionBudget();
       }
@@ -5468,6 +6018,227 @@
         return (lower + upper) / 2;
       }
 
+      function formatDistributionRate(
+        count,
+        total
+      ) {
+        if (!count || !total) {
+          return "0%";
+        }
+
+        var rate = count / total * 100;
+
+        if (rate < .001) {
+          return "<0.001%";
+        }
+
+        if (rate < 1) {
+          return rate.toFixed(3) + "%";
+        }
+
+        if (rate < 10) {
+          return rate.toFixed(2) + "%";
+        }
+
+        return rate.toFixed(1) + "%";
+      }
+
+      function renderPredictionDistribution(
+        histogram,
+        total
+      ) {
+        var chart =
+          id("prediction-histogram");
+
+        var binSize = clampInteger(
+          id("prediction-bin-size").value,
+          5,
+          20
+        );
+
+        var successCount = 0;
+        var lastSuccessPull = 0;
+
+        for (
+          var pull = 1;
+          pull < histogram.length;
+          pull += 1
+        ) {
+          if (histogram[pull]) {
+            successCount += histogram[pull];
+            lastSuccessPull = pull;
+          }
+        }
+
+        var failureCount =
+          Math.max(0, total - successCount);
+
+        id(
+          "prediction-distribution-success"
+        ).textContent =
+          "成功出金 " +
+          successCount.toLocaleString("zh-CN") +
+          " 轮 · " +
+          formatDistributionRate(
+            successCount,
+            total
+          );
+
+        id(
+          "prediction-distribution-failure"
+        ).textContent =
+          "资源耗尽未出金 " +
+          failureCount.toLocaleString("zh-CN") +
+          " 轮 · " +
+          formatDistributionRate(
+            failureCount,
+            total
+          );
+
+        chart.replaceChildren();
+        chart.classList.toggle(
+          "is-empty",
+          !successCount
+        );
+
+        if (!successCount) {
+          var empty =
+            document.createElement("div");
+
+          empty.className = "histogram-empty";
+          empty.textContent =
+            "本次模拟没有任何轮次获得当期 UP 五星，因此暂无可绘制的出金区间。";
+
+          chart.append(empty);
+
+          id(
+            "prediction-distribution-scale"
+          ).textContent = "暂无成功样本";
+
+          return;
+        }
+
+        var binCount = Math.ceil(
+          lastSuccessPull / binSize
+        );
+
+        var bins =
+          new Uint32Array(binCount);
+
+        for (
+          var value = 1;
+          value <= lastSuccessPull;
+          value += 1
+        ) {
+          bins[
+            Math.floor((value - 1) / binSize)
+          ] += histogram[value];
+        }
+
+        var maximum = 0;
+
+        for (
+          var binIndex = 0;
+          binIndex < bins.length;
+          binIndex += 1
+        ) {
+          maximum = Math.max(
+            maximum,
+            bins[binIndex]
+          );
+        }
+
+        id(
+          "prediction-distribution-scale"
+        ).textContent =
+          "最高柱：" +
+          maximum.toLocaleString("zh-CN") +
+          " 轮";
+
+        for (
+          var index = 0;
+          index < bins.length;
+          index += 1
+        ) {
+          var count = bins[index];
+          var start = index * binSize + 1;
+          var end = (index + 1) * binSize;
+          var rateText =
+            formatDistributionRate(
+              count,
+              total
+            );
+
+          var column =
+            document.createElement("div");
+
+          column.className =
+            "histogram-column";
+          column.setAttribute(
+            "role",
+            "listitem"
+          );
+          column.tabIndex = 0;
+          column.setAttribute(
+            "aria-label",
+            "第 " +
+            start +
+            " 至 " +
+            end +
+            " 抽获得 UP：" +
+            count +
+            " 轮，占全部模拟的 " +
+            rateText
+          );
+
+          var stat =
+            document.createElement("div");
+
+          stat.className = "histogram-stat";
+
+          var countLabel =
+            document.createElement("strong");
+
+          countLabel.textContent =
+            count.toLocaleString("zh-CN") +
+            " 次";
+
+          var rateLabel =
+            document.createElement("small");
+
+          rateLabel.textContent = rateText;
+          stat.append(countLabel, rateLabel);
+
+          var track =
+            document.createElement("div");
+
+          track.className = "histogram-track";
+
+          var bar =
+            document.createElement("div");
+
+          bar.className = "histogram-bar";
+          bar.style.height = count
+            ? Math.max(
+                2,
+                count / maximum * 100
+              ) + "%"
+            : "0";
+
+          track.append(bar);
+
+          var range =
+            document.createElement("span");
+
+          range.className = "histogram-range";
+          range.textContent =
+            start + "–" + end + " 抽";
+
+          column.append(stat, track, range);
+          chart.append(column);
+        }
+      }
+
       function renderPrediction(
         store,
         stats,
@@ -5513,6 +6284,13 @@
           ) + " 抽";
 
         lastPredictionResults = store;
+        lastPredictionHistogram =
+          stats.histogram;
+
+        renderPredictionDistribution(
+          lastPredictionHistogram,
+          store.count
+        );
 
         lastPredictionContext = {
           budget: clone(budget),
@@ -5602,6 +6380,7 @@
           "起始五星水位",
           "起始四星水位",
           "下一五星状态",
+          "下一四星状态",
           "明光连续歪次数",
           "纠缠之缘",
           "原石",
@@ -5701,6 +6480,9 @@
                 settings.fivePity,
                 settings.fourPity,
                 settings.guaranteed5
+                  ? "大保底"
+                  : "小保底",
+                settings.guaranteed4
                   ? "大保底"
                   : "小保底",
                 settings.radianceLosses,
@@ -6069,6 +6851,59 @@
           id("three-weapon-select"),
           config.threeWeapons
         );
+
+        id("settings-five-pity").value =
+          wishState.fivePity;
+
+        id("settings-four-pity").value =
+          wishState.fourPity;
+
+        id("settings-guarantee-five").value =
+          wishState.guaranteed5
+            ? "big"
+            : "small";
+
+        id("settings-guarantee-four").value =
+          wishState.guaranteed4
+            ? "big"
+            : "small";
+
+        id("settings-radiance-losses").value =
+          String(wishState.radianceLosses);
+
+        id("settings-total").value =
+          wishState.total;
+
+        id("settings-total-five").value =
+          wishState.totalFive;
+
+        id("settings-total-four").value =
+          wishState.totalFour;
+
+        id("settings-total-three").value =
+          wishState.totalThree;
+
+        id("settings-up-five-count").value =
+          wishState.upFiveCount;
+
+        id("settings-off-banner-five-count")
+          .value =
+            wishState.offBannerFiveCount;
+
+        id("settings-five-pity-sum").value =
+          wishState.fivePitySum;
+
+        id("settings-four-pity-sum").value =
+          wishState.fourPitySum;
+
+        id("settings-up-cycle-pulls").value =
+          wishState.upCyclePulls;
+
+        id("settings-last-up-pulls").value =
+          wishState.lastUpPulls;
+
+        id("settings-up-pulls-sum").value =
+          wishState.upPullsSum;
 
         renderCatalogManager();
       }
@@ -6453,6 +7288,83 @@
         showToast("已恢复该分类默认条目");
       }
 
+      function resetUpPool() {
+        if (!settingsDraftCatalogs) {
+          return;
+        }
+
+        var preserved =
+          captureSettingsSelection();
+
+        settingsDraftCatalogs.standardFive =
+          settingsDraftCatalogs.standardFive
+            .filter(function (name) {
+              return name !== DEFAULT_CONFIG.up5;
+            });
+
+        settingsDraftCatalogs.fourCharacters =
+          settingsDraftCatalogs.fourCharacters
+            .filter(function (name) {
+              return name !== DEFAULT_CONFIG.up5;
+            });
+
+        if (
+          settingsDraftCatalogs.limitedFive
+            .indexOf(DEFAULT_CONFIG.up5) === -1
+        ) {
+          settingsDraftCatalogs.limitedFive
+            .push(DEFAULT_CONFIG.up5);
+        }
+
+        DEFAULT_CONFIG.up4.forEach(
+          function (name) {
+            settingsDraftCatalogs.limitedFive =
+              settingsDraftCatalogs.limitedFive
+                .filter(function (value) {
+                  return value !== name;
+                });
+
+            settingsDraftCatalogs.standardFive =
+              settingsDraftCatalogs.standardFive
+                .filter(function (value) {
+                  return value !== name;
+                });
+
+            if (
+              settingsDraftCatalogs.fourCharacters
+                .indexOf(name) === -1
+            ) {
+              settingsDraftCatalogs.fourCharacters
+                .push(name);
+            }
+          }
+        );
+
+        [DEFAULT_CONFIG.up5]
+          .concat(DEFAULT_CONFIG.up4)
+          .forEach(function (name) {
+            if (DEFAULT_ELEMENTS[name]) {
+              settingsDraftElements[name] =
+                DEFAULT_ELEMENTS[name];
+            }
+          });
+
+        preserved.up5 = DEFAULT_CONFIG.up5;
+        preserved.up4 =
+          DEFAULT_CONFIG.up4.slice();
+        preserved.fourPool = unique(
+          preserved.fourPool.concat(
+            DEFAULT_CONFIG.up4
+          )
+        );
+
+        refreshSettingsOptions(preserved);
+        renderCatalogManager();
+        showToast(
+          "已恢复源码默认 UP，保存后生效"
+        );
+      }
+
       function saveSettings() {
         var up4 = [
           id("up-four-1").value,
@@ -6526,11 +7438,51 @@
           threeWeapons: threeWeapons
         });
 
+        wishState = sanitizeState({
+          fivePity:
+            id("settings-five-pity").value,
+          fourPity:
+            id("settings-four-pity").value,
+          guaranteed5:
+            id("settings-guarantee-five")
+              .value === "big",
+          guaranteed4:
+            id("settings-guarantee-four")
+              .value === "big",
+          radianceLosses:
+            id("settings-radiance-losses")
+              .value,
+          total:
+            id("settings-total").value,
+          totalFive:
+            id("settings-total-five").value,
+          totalFour:
+            id("settings-total-four").value,
+          totalThree:
+            id("settings-total-three").value,
+          upFiveCount:
+            id("settings-up-five-count").value,
+          offBannerFiveCount:
+            id("settings-off-banner-five-count")
+              .value,
+          fivePitySum:
+            id("settings-five-pity-sum").value,
+          fourPitySum:
+            id("settings-four-pity-sum").value,
+          upCyclePulls:
+            id("settings-up-cycle-pulls").value,
+          lastUpPulls:
+            id("settings-last-up-pulls").value,
+          upPullsSum:
+            id("settings-up-pulls-sum").value
+        });
+
         saveData();
         renderState();
+        syncPredictionState();
         populateSettings(catalogs);
         closeModal("settings-modal");
-        showToast("卡池配置已保存");
+        showToast("卡池与祈愿状态已保存");
       }
 
       function openModal(modalId) {
@@ -6635,6 +7587,7 @@
 
         saveData();
         renderState();
+        syncPredictionState();
         renderEmpty();
         closeModal("settings-modal");
         showToast("祈愿记录已重置");
@@ -6712,6 +7665,12 @@
             saveSettings
           );
 
+        id("reset-up-pool")
+          .addEventListener(
+            "click",
+            resetUpPool
+          );
+
         id("prediction-run")
           .addEventListener(
             "click",
@@ -6722,6 +7681,22 @@
           .addEventListener(
             "click",
             downloadPredictionCsv
+          );
+
+        id("prediction-bin-size")
+          .addEventListener(
+            "change",
+            function () {
+              if (
+                lastPredictionHistogram &&
+                lastPredictionResults
+              ) {
+                renderPredictionDistribution(
+                  lastPredictionHistogram,
+                  lastPredictionResults.count
+                );
+              }
+            }
           );
 
         id("prediction-view")
