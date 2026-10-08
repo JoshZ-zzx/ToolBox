@@ -264,4 +264,4 @@ Enter 的作用随所在输入框和结算阶段变化，操作时以页面显�
 
 欢迎通过 [GitHub Issues](https://github.com/JoshZ-zzx/ToolBox/issues) 反馈问题或提出改进建议。反馈时请说明使用的工具文件、设备与浏览器、操作步骤，以及预期结果和实际结果；涉及账本或个人数据时，请先移除不需要公开的内容。
 
-本仓库采用 [MIT 许可证](LICENSE)。
+本仓库采用 [GPL-3.0 许可证](LICENSE)。
