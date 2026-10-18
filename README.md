@@ -215,6 +215,8 @@ Enter 的作用随所在输入框和结算阶段变化，操作时以页面显�
 
 ## 7. 原神祈愿模拟器
 
+**独立版已迁往 [GenshinWishSimulator](https://github.com/JoshZ-zzx/GenshinWishSimulator)**，新增多个 UP 目标与预算规划、存档导入导出。访问 [独立版网站](https://joshz-zzx.github.io/GenshinWishSimulator/)，旧用户先通过 [存档迁移页](https://joshzhangzzx.top/GenshinMigration.html) 导出本地存档。下文保留旧版使用说明。
+
 提供角色活动祈愿的单抽、十连体验，以及基于现有资源的 UP 五星获得概率预测。
 
 **推荐版本：** [v2](https://joshzhangzzx.top/GenshinSimulator_v2.html)
